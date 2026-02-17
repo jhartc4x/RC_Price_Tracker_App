@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-block">
+    <div class="addons-header">
+        <div class="header-content">
+            <h2>Find Cruises</h2>
+            <p>Search for sailings and check current cabin pricing</p>
+        </div>
+    </div>
+
+    <div class="addons-filter-bar" id="cruises-filter-bar">
+        <!-- Ship Filter -->
+        <div class="filter-group">
+            <label for="cruise-ship">Ship</label>
+            <select id="cruise-ship" aria-label="Select Ship">
+                <option value="">Any Ship</option>
+                <!-- Populated by JS -->
+            </select>
+        </div>
+
+        <!-- Port Filter -->
+        <div class="filter-group">
+            <label for="cruise-port">Departure Port</label>
+            <select id="cruise-port" aria-label="Select Port">
+                <option value="">Any Port</option>
+                <option value="MIA">Miami, Florida</option>
+                <option value="FLL">Fort Lauderdale, Florida</option>
+                <option value="PCN">Port Canaveral, Florida</option>
+                <option value="TPA">Tampa, Florida</option>
+                <option value="NJ">Cape Liberty, New Jersey</option>
+                <option value="GAL">Galveston, Texas</option>
+                <option value="LAX">Los Angeles, California</option>
+                <option value="SEA">Seattle, Washington</option>
+                <option value="BCN">Barcelona, Spain</option>
+                <option value="ROM">Rome (Civitavecchia), Italy</option>
+                <option value="SYD">Sydney, Australia</option>
+            </select>
+        </div>
+
+        <!-- Date Range Filter -->
+        <div class="filter-group">
+            <label for="cruise-month">Month</label>
+            <input type="month" id="cruise-month" aria-label="Select Month">
+        </div>
+
+        <!-- Guests Filter -->
+        <div class="filter-group" style="max-width: 100px;">
+            <label for="cruise-guests">Guests</label>
+            <input type="number" id="cruise-guests" value="2" min="1" max="5" aria-label="Number of Guests">
+        </div>
+
+        <!-- Max Price Filter -->
+        <div class="filter-group">
+            <label for="cruise-max-price">Max Price</label>
+            <input type="number" id="cruise-max-price" placeholder="$/pp" min="0" step="100"
+                aria-label="Maximum Price Per Person">
+        </div>
+
+        <button id="cruise-search-btn" class="search-btn">
+            <span id="cruise-search-text">Search</span>
+        </button>
+    </div>
+</section>
+
+<section class="section-block" id="cruises-results" style="display: none;">
+    <div id="cruises-summary" class="addons-summary-strip">
+        <!-- JS populates summary here -->
+    </div>
+
+    <!-- Grid of Cruise Cards -->
+    <div class="cruise-grid" id="cruises-grid">
+        <!-- Cards injected by JS -->
+    </div>
+</section>
+
+<style>
+    /* Reuse existing addons styles where possible, add specifics for cruises */
+    .cruise-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .cruise-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .cruise-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .cruise-header {
+        padding: 16px;
+        border-bottom: 1px solid var(--border-color);
+        background: linear-gradient(to right, rgba(255, 255, 255, 0.03), transparent);
+    }
+
+    .cruise-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: var(--text-primary);
+    }
+
+    .cruise-meta {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .cruise-body {
+        padding: 16px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .cruise-ports {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        line-height: 1.4;
+    }
+
+    .price-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-top: auto;
+    }
+
+    .price-item {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 6px;
+        padding: 8px;
+        text-align: center;
+    }
+
+    .price-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 2px;
+    }
+
+    .price-val {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .price-val.na {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        font-weight: 400;
+    }
+</style>
+{% endblock %}

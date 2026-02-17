@@ -142,38 +142,85 @@
 
   function hookAddonsPage() {
     const shipSelect = document.getElementById('filter-ship');
-    const dateInput = document.getElementById('filter-date');
+    const dateSelect = document.getElementById('filter-date');
     const goBtn = document.getElementById('filter-go');
     const goBtnText = document.getElementById('filter-go-text');
     const resultsSection = document.getElementById('addons-results');
 
-    if (!shipSelect || !dateInput || !goBtn || !resultsSection) {
+    if (!shipSelect || !dateSelect || !goBtn || !resultsSection) {
       return; // Not on addons page
     }
+
+    // Helper to check valid state
+    const validateForm = () => {
+      if (shipSelect.value && dateSelect.value) {
+        goBtn.disabled = false;
+      } else {
+        goBtn.disabled = true;
+      }
+    };
 
     // Fetch all ships for dropdown
     fetch('/api/ships', { cache: 'no-store' })
       .then(r => r.json())
       .then(data => {
         const ships = data.ships || [];
-        shipSelect.innerHTML = '<option value="">Select a ship</option>';
+        shipSelect.innerHTML = '<option value="">Select a Ship</option>';
         ships.forEach(s => {
           const opt = document.createElement('option');
           opt.value = s.ship_code;
-          opt.textContent = s.ship_name + ' (' + s.ship_code + ')';
+          opt.textContent = s.ship_name;
           shipSelect.appendChild(opt);
         });
       })
       .catch(() => {
-        shipSelect.innerHTML = '<option value="">No ships found</option>';
+        shipSelect.innerHTML = '<option value="">Failed to load ships</option>';
       });
 
-    // Enable/disable go button based on both fields
-    function updateGoButton() {
-      goBtn.disabled = !shipSelect.value || !dateInput.value;
-    }
-    shipSelect.addEventListener('change', updateGoButton);
-    dateInput.addEventListener('input', updateGoButton);
+    // Handle ship change -> fetch sailings
+    shipSelect.addEventListener('change', () => {
+      const shipCode = shipSelect.value;
+
+      // Reset date dropdown
+      dateSelect.innerHTML = '<option value="">Select a Ship First</option>';
+      dateSelect.disabled = true;
+      goBtn.disabled = true;
+
+      if (!shipCode) return;
+
+      dateSelect.innerHTML = '<option value="">Loading sailings...</option>';
+
+      fetch('/api/sailings?ship_code=' + encodeURIComponent(shipCode), { cache: 'no-store' })
+        .then(r => r.json())
+        .then(data => {
+          const sailings = data.sailings || [];
+          if (sailings.length === 0) {
+            dateSelect.innerHTML = '<option value="">No sailings found</option>';
+            return;
+          }
+
+          dateSelect.innerHTML = '<option value="">Select Sail Date</option>';
+          sailings.forEach(dateStr => {
+            // Format date nicely (YYYY-MM-DD -> Month DD, YYYY)
+            const d = new Date(dateStr + 'T12:00:00');
+            const label = d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
+            const opt = document.createElement('option');
+            opt.value = dateStr; // Keep YYYY-MM-DD for API
+            opt.textContent = label;
+            dateSelect.appendChild(opt);
+          });
+
+          dateSelect.disabled = false;
+        })
+        .catch(err => {
+          console.error(err);
+          dateSelect.innerHTML = '<option value="">Error loading dates</option>';
+        });
+    });
+
+    // Handle date change -> enable button
+    dateSelect.addEventListener('change', validateForm);
 
     // Tab switching
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -189,7 +236,7 @@
     // Fetch and render addons
     goBtn.addEventListener('click', () => {
       const ship = shipSelect.value;
-      const rawDate = dateInput.value;
+      const rawDate = dateSelect.value;
       if (!ship || !rawDate) return;
 
       // Convert YYYY-MM-DD to YYYYMMDD for the API
@@ -349,6 +396,153 @@
     });
   }
 
+  function hookCruisesPage() {
+    const shipSelect = document.getElementById('cruise-ship');
+    const portSelect = document.getElementById('cruise-port');
+    const dateInput = document.getElementById('cruise-month');
+    const guestsInput = document.getElementById('cruise-guests');
+    const maxPriceInput = document.getElementById('cruise-max-price');
+    const searchBtn = document.getElementById('cruise-search-btn');
+    const searchBtnText = document.getElementById('cruise-search-text');
+    const resultsContainer = document.getElementById('cruises-results'); // Section
+    const summaryDiv = document.getElementById('cruises-summary');
+    const gridDiv = document.getElementById('cruises-grid');
+
+    if (!shipSelect || !searchBtn) return; // Not on cruises page
+
+    // 1. Populate Ships (with retry)
+    const loadShips = () => {
+      if (shipSelect.options.length > 1) return; // Already loaded
+
+      fetch('/api/ships')
+        .then(r => r.json())
+        .then(data => {
+          if (data.ships) {
+            shipSelect.innerHTML = '<option value="">Any Ship</option>';
+            data.ships.forEach(s => {
+              const opt = document.createElement('option');
+              opt.value = s.ship_code;
+              opt.textContent = s.ship_name;
+              shipSelect.appendChild(opt);
+            });
+          }
+        })
+        .catch(console.error);
+    };
+
+    loadShips();
+    // Retry once in case of race condition
+    setTimeout(loadShips, 1000);
+
+    // 2. Search Handler
+    searchBtn.addEventListener('click', () => {
+      // Validate - require at least one filter?
+      const shipCode = shipSelect.value;
+      const portCode = portSelect.value;
+      const dateRange = dateInput.value;
+
+      if (!shipCode && !portCode && !dateRange) {
+        alert("Please select at least a Ship, Port, or Month.");
+        return;
+      }
+
+      // UI Loading
+      searchBtn.disabled = true;
+      searchBtnText.textContent = 'Searching...';
+      resultsContainer.style.display = 'block';
+      summaryDiv.innerHTML = '<span style="color:var(--text-muted)">Loading sailings...</span>';
+      gridDiv.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px;"><div class="spinner"></div></div>';
+
+      // Build Params
+      const params = new URLSearchParams();
+      if (shipCode) params.append('ship_code', shipCode);
+      if (portCode) params.append('port_code', portCode);
+      if (dateRange) params.append('date_range', dateRange); // YYYY-MM
+      params.append('guests', guestsInput.value || '2');
+      if (maxPriceInput.value) params.append('max_price', maxPriceInput.value);
+
+      // Fetch
+      fetch('/api/cruises?' + params.toString())
+        .then(r => r.json())
+        .then(data => {
+          searchBtn.disabled = false;
+          searchBtnText.textContent = 'Search';
+
+          if (data.error) {
+            summaryDiv.innerHTML = `<span style="color:var(--status-err)">Error: ${data.error}</span>`;
+            gridDiv.innerHTML = '';
+            return;
+          }
+
+          const cruises = data.cruises || [];
+          if (cruises.length === 0) {
+            summaryDiv.innerHTML = 'No scheduled cruises found for these filters.';
+            gridDiv.innerHTML = '';
+            return;
+          }
+
+          summaryDiv.innerHTML = `Found <strong>${cruises.length}</strong> sailings. showing lowest price per person.`;
+
+          gridDiv.innerHTML = cruises.map(c => {
+            // Logic to format date nicely
+            let dateStr = c.sail_date; // YYYY-MM-DD
+            try {
+              const parts = c.sail_date.split('-');
+              const d = new Date(parts[0], parts[1] - 1, parts[2]);
+              dateStr = d.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+            } catch (e) { }
+
+            // Ports list
+            const portsStr = (c.ports || []).join(' • ');
+
+            // Pricing
+            const p = c.prices || {};
+            const formatPrice = (val) => val ? `$${Math.round(val)}` : '<span class="na">--</span>';
+
+            return `
+            <div class="cruise-card">
+                <div class="cruise-header">
+                    <div class="cruise-title">${c.ship_name}</div>
+                    <div class="cruise-meta">
+                        <span>${c.nights}-Night ${c.title}</span>
+                        <span>${dateStr}</span>
+                    </div>
+                </div>
+                <div class="cruise-body">
+                    <div class="cruise-ports">${portsStr}</div>
+                    <div class="price-grid">
+                        <div class="price-item">
+                            <div class="price-label">Interior</div>
+                            <div class="price-val">${formatPrice(p.INTERIOR)}</div>
+                        </div>
+                        <div class="price-item">
+                            <div class="price-label">Ocean View</div>
+                            <div class="price-val">${formatPrice(p.OCEANVIEW)}</div>
+                        </div>
+                        <div class="price-item">
+                            <div class="price-label">Balcony</div>
+                            <div class="price-val">${formatPrice(p.BALCONY)}</div>
+                        </div>
+                        <div class="price-item">
+                            <div class="price-label">Suite</div>
+                            <div class="price-val">${formatPrice(p.SUITE)}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+          }).join('');
+
+        })
+        .catch(err => {
+          searchBtn.disabled = false;
+          searchBtnText.textContent = 'Search';
+          summaryDiv.innerHTML = `<span style="color:var(--status-err)">Failed to load: ${err}</span>`;
+          gridDiv.innerHTML = '';
+        });
+    });
+  }
+
   function escapeHtml(text) {
     const div = document.createElement('div');
     div.appendChild(document.createTextNode(text));
@@ -360,4 +554,10 @@
   hookStatusPolling();
   hookRunLogModal();
   hookAddonsPage();
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', hookCruisesPage);
+  } else {
+    hookCruisesPage();
+  }
 })();

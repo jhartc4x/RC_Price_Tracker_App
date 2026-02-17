@@ -760,6 +760,10 @@ def create_app(
             scheduler_enabled=bool(app.extensions.get("web_scheduler")),
         )
 
+    @app.get("/cruises")
+    def cruises_page() -> str:
+        return render_template("cruises.html")
+
     @app.get("/api/ships")
     def api_ships() -> Any:
         from modules.addons import get_ship_dictionary
@@ -767,6 +771,77 @@ def create_app(
         ships_dict = get_ship_dictionary()
         ships = [{"ship_code": code, "ship_name": name} for code, name in sorted(ships_dict.items(), key=lambda x: x[1])]
         return jsonify({"ships": ships})
+
+    @app.get("/api/sailings")
+    def api_sailings() -> Any:
+        ship_code = request.args.get("ship_code", "").strip()
+        if not ship_code:
+            return jsonify({"sailings": []})
+
+        url = "https://www.royalcaribbean.com/cruises/graph"
+        query = """query cruiseSearch_Cruises($filters: String, $qualifiers: String, $sort: CruiseSearchSort, $pagination: CruiseSearchPagination) {
+  cruiseSearch(
+    filters: $filters
+    qualifiers: $qualifiers
+    sort: $sort
+    pagination: $pagination
+  ) {
+    results {
+      cruises {
+        sailings {
+          sailDate
+        }
+      }
+    }
+  }
+}"""
+
+        headers = {
+            "accept": "*/*",
+            "content-type": "application/json",
+            "brand": "R",
+            "country": "USA",
+            "language": "en",
+            "currency": "USD",
+            "office": "MIA",
+            "countryalpha2code": "US",
+            "apollographql-client-name": "rci-NextGen-Cruise-Search",
+            "skip_authentication": "true",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        }
+
+        payload = {
+            "operationName": "cruiseSearch_Cruises",
+            "variables": {
+                "filters": f"ship:{ship_code}",
+                "sort": {"by": "RECOMMENDED"},
+                "pagination": {"count": 100, "skip": 0},
+            },
+            "query": query,
+        }
+
+        try:
+            resp = requests.post(url, json=payload, headers=headers, timeout=10)
+            if resp.status_code == 200:
+                data = resp.json()
+                results = data.get("data", {}).get("cruiseSearch", {}).get("results", {})
+                cruises = results.get("cruises") or []
+
+                all_dates = set()
+                for cruise in cruises:
+                    for sailing in cruise.get("sailings", []):
+                        d = sailing.get("sailDate")
+                        if d:
+                            all_dates.add(str(d))
+
+                # Sort dates
+                sorted_dates = sorted(list(all_dates))
+                return jsonify({"sailings": sorted_dates})
+
+            return jsonify({"sailings": [], "error": f"API error: {resp.status_code}"})
+
+        except Exception as exc:
+            return jsonify({"sailings": [], "error": str(exc)})
 
     @app.get("/api/addons")
     def api_addons() -> Any:
@@ -891,7 +966,7 @@ def create_app(
                             GRAPHQL_URL,
                             headers=api_headers,
                             json=gql_payload,
-                            timeout=15,
+                            timeout=45,
                         )
 
                         if resp.status_code != 200:
@@ -971,7 +1046,7 @@ def create_app(
                                     detail_url,
                                     headers=api_headers,
                                     params=detail_params,
-                                    timeout=10,
+                                    timeout=30,
                                 )
                                 if detail_resp.status_code == 200:
                                     detail_data = detail_resp.json()
@@ -1028,38 +1103,245 @@ def create_app(
                               AND sail_date = ?
                             GROUP BY product_code, COALESCE(passenger_name, '-'), COALESCE(reservation_id, '-')
                         ) latest ON ph.id = latest.max_id
-                        ORDER BY ph.product_name, ph.passenger_name
+                        ORDER BY ph.product_name
                         """,
                         (ship_code, sail_date),
                     ).fetchall()
+                    purchased = [dict(r) for r in rows]
+
+                    # Also get history for available items
+                    rows_avail = conn.execute(
+                        """
+                        SELECT ph.check_date, ph.product_code, ph.product_name,
+                               ph.current_price, ph.currency
+                        FROM price_history ph
+                        JOIN (
+                            SELECT product_code, MAX(id) AS max_id
+                            FROM price_history
+                            WHERE record_type = 'addon'
+                              AND ship_code = ?
+                              AND sail_date = ?
+                              AND paid_price = 0
+                            GROUP BY product_code
+                        ) latest ON ph.id = latest.max_id
+                        """,
+                        (ship_code, sail_date),
+                    ).fetchall()
+                    db_available = [dict(r) for r in rows_avail]
+
                 except sqlite3.OperationalError:
-                    rows = []
+                    # Table might not exist yet
+                    pass
 
-            for row in rows:
-                item = dict(row)
-                paid = item.get("paid_price")
-                current = item.get("current_price") or 0
-                item["savings"] = round(paid - current, 2) if paid is not None and paid > 0 else None
-                item["source"] = "db"
-
-                if paid is not None:
-                    purchased.append(item)
-                else:
-                    db_available.append(item)
-
-        # ── 3. Merge: prefer live data, fall back to DB ──
+        # ── 3. Merge Live + DB ──
+        # If we have live data, use it as primary source for "Available"
+        final_available = []
         if live_available:
-            available = live_available
+            # Maybe enrich with history (e.g. "lowest price was X")
+            final_available = live_available
+            source = "live"
         else:
-            available = db_available
+            final_available = db_available
+            source = "db" if db_available else "none"
+
+        # Calculate savings for purchased
+        for p in purchased:
+            # Try to find current live price for this item
+            current = None
+            if live_available:
+                # fast lookup
+                match = next((x for x in live_available if x["product_code"] == p["product_code"]), None)
+                if match:
+                    current = match["current_price"]
+            
+            # If no live price, use last DB price
+            if current is None:
+                current = p["current_price"]
+
+            paid = p["paid_price"]
+            if current is not None and paid is not None:
+                p["current_price"] = current
+                p["savings"] = paid - current
+            else:
+                p["savings"] = 0
 
         return jsonify({
             "purchased": purchased,
-            "available": available,
-            "source": "live" if live_available else ("db" if db_available else "empty"),
+            "available": final_available,
+            "source": source,
             "error": live_error,
-            "diagnostics": diagnostics,
+            "diagnostics": diagnostics
         })
+
+    @app.get("/api/cruises")
+    def api_cruises() -> Any:
+        from modules.addons import get_ship_dictionary
+        
+        ship_code = request.args.get("ship_code", "").strip()
+        port_code = request.args.get("port_code", "").strip()
+        date_range = request.args.get("date_range", "").strip() # YYYY-MM
+        guests = request.args.get("guests", "2")
+        max_price_str = request.args.get("max_price", "").strip()
+        
+        # Max Price
+        max_price = None
+        if max_price_str:
+            try:
+                max_price = float(max_price_str)
+            except:
+                pass
+
+        # Resolve Ship Dictionary for lookups
+        ships = get_ship_dictionary()
+        
+        # Build Filters
+        filters_parts = []
+        if ship_code:
+            filters_parts.append(f"ship:{ship_code}")
+        
+        if port_code:
+            filters_parts.append(f"departurePort:{port_code}")
+            
+        if date_range:
+             filters_parts.append(f"date:{date_range}")
+
+        try:
+            g_int = int(guests)
+            filters_parts.append(f"adults:{g_int}")
+        except:
+            filters_parts.append("adults:2")
+            
+        filters_str = "|".join(filters_parts)
+
+        url = "https://www.royalcaribbean.com/cruises/graph"
+            
+        # Updated Query with stateroomClassPricing
+        query = """query cruiseSearch_Cruises($filters: String, $sort: CruiseSearchSort, $pagination: CruiseSearchPagination) {
+    cruiseSearch(
+        filters: $filters
+        sort: $sort
+        pagination: $pagination
+    ) {
+        results {
+        cruises {
+            id
+            sailings {
+                sailDate
+                itinerary {
+                    name
+                }
+                stateroomClassPricing {
+                    price {
+                        value
+                    }
+                    stateroomClass {
+                        name
+                    }
+                }
+            }
+        }
+        }
+    }
+    }"""
+
+        payload = {
+            "operationName": "cruiseSearch_Cruises",
+            "variables": {
+                "filters": filters_str,
+                "sort": {"by": "RECOMMENDED"},
+                "pagination": {"count": 50, "skip": 0}, # Increased count
+            },
+            "query": query
+        }
+
+        # Headers REQUIRED to avoid timeout/403
+        headers = {
+            "accept": "*/*",
+            "content-type": "application/json",
+            "brand": "R",
+            "country": "USA",
+            "language": "en",
+            "currency": "USD",
+            "office": "MIA",
+            "countryalpha2code": "US",
+            "apollographql-client-name": "rci-NextGen-Cruise-Search",
+            "skip_authentication": "true",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        }
+
+        # print(f"DEBUG: Fetching cruises with filters: {filters_str}")
+        try:
+            response = requests.post(url, json=payload, headers=headers, timeout=60)
+            
+            if response.status_code != 200:
+                print(f"API Error: {response.text}")
+                return jsonify({"cruises": [], "error": f"API Error {response.status_code}"})
+
+            data = response.json()
+            if "errors" in data:
+                print(f"GraphQL Errors: {data['errors']}")
+                # Continue if partial data? No, errors usually mean no data.
+
+            results = data.get("data", {}).get("cruiseSearch", {}).get("results", {})
+            raw_cruises = results.get("cruises") or []
+
+            # Process Results
+            processed_cruises = []
+            import re
+            
+            for c in raw_cruises:
+                cid = c.get("id", "")
+                
+                # Derive Ship Name from ID (e.g. IC07MIA -> IC)
+                derived_ship_code = cid[:2]
+                current_ship_name = ships.get(derived_ship_code, derived_ship_code)
+                
+                # Derive Nights
+                nights_match = re.search(r'^[A-Z]{2}(\d+)', cid)
+                nights = int(nights_match.group(1)) if nights_match else 0
+
+                for s in c.get("sailings", []):
+                    prices = {}
+                    pricing_list = s.get("stateroomClassPricing", []) or []
+                    
+                    lowest_val = 999999
+                    
+                    for p_obj in pricing_list:
+                        if not p_obj or not p_obj.get("price"): continue
+                        
+                        val = p_obj.get("price", {}).get("value")
+                        cat_name = p_obj.get("stateroomClass", {}).get("name", "").upper()
+                        
+                        if val is not None:
+                            if val < lowest_val: lowest_val = val
+                            
+                            if "INTERIOR" in cat_name: prices["INTERIOR"] = val
+                            elif "BALCONY" in cat_name: prices["BALCONY"] = val
+                            elif "OUTSIDE" in cat_name or "OCEAN" in cat_name: prices["OCEANVIEW"] = val
+                            elif "SUITE" in cat_name: prices["SUITE"] = val
+                    
+                    # Max Price Filter
+                    if max_price and lowest_val > max_price:
+                        continue
+
+                    item = {
+                        "ship_name": current_ship_name,
+                        "ship_code": derived_ship_code,
+                        "title": s.get("itinerary", {}).get("name", "Cruise"),
+                        "sail_date": s.get("sailDate"),
+                        "nights": nights,
+                        "prices": prices
+                    }
+                    processed_cruises.append(item)
+
+            # Sort by date
+            processed_cruises.sort(key=lambda x: x['sail_date'])
+            
+            return jsonify({"cruises": processed_cruises})
+
+        except Exception as exc:
+            print(f"Exception fetching cruises: {exc}")
+            return jsonify({"cruises": [], "error": str(exc)})
 
     started, startup_message = start_background_scheduler()
     if started:
