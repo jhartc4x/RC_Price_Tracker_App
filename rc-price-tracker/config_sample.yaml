@@ -1,0 +1,44 @@
+# Royal Caribbean Price Tracker - Sample Configuration
+# Copy this file to config.yaml and fill in your details
+
+accounts:
+  - username: "your@email.com"
+    password: "yourRCpassword"       # NOTE: Password cannot contain % symbol
+    cruise_line: "royal"             # "royal" or "celebrity"
+    cna_number: "123456789"          # Crown & Anchor loyalty number
+    last_name: "SMITH"               # Last name for ClubRoyaleOffers.com login
+
+# Cabin price watchlist - must capture URL manually (see README for instructions)
+cruise_watchlist:
+  - url: "https://www.royalcaribbean.com/checkout/guest-info?sailDate=2026-06-13&shipCode=IC..."
+    paid_price: 4500.00              # What you paid - set to 0.00 to just monitor
+    label: "Icon of the Seas June 2026"
+
+# Add-on tracking - auto-detects all purchased items from order history
+addon_tracking:
+  enabled: true
+  # Optionally restrict to specific product categories:
+  # categories: [pt_beverage, pt_internet, pt_excursion, pt_dining]
+
+# Casino offer tracking
+casino_tracking:
+  enabled: true
+  notify_new_offers: true           # Alert when a new comp offer appears
+
+# Scheduler - runs checks at these times daily
+schedule:
+  times: ["07:00", "19:00"]
+  timezone: "America/New_York"
+
+# Notifications via Apprise (https://github.com/caronc/apprise)
+# Supports email, Discord, Slack, WhatsApp, ntfy, SMS, and many more
+notifications:
+  - url: "mailto://yourgmail:apppassword@gmail.com"
+  # - url: "discord://webhookid/webhooktoken"
+  # - url: "ntfy://topicname"
+
+settings:
+  currency: "USD"
+  min_savings_threshold: 5.00       # Only alert if savings exceed this $ amount
+  price_history_days: 90            # Days of price history to retain in DB
+  apprise_test: false               # Set true to send a test notification on startup

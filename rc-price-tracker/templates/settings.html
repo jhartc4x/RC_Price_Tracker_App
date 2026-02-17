@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Settings | Royal Caribbean Price Companion{% endblock %}
+{% block content %}
+<section class="hero-banner settings-hero">
+  <div>
+    <p class="eyebrow">Configuration</p>
+    <h1>Manage accounts, watchlist, schedule, and notifications.</h1>
+    <p>Edit settings and save directly to <code>config.yaml</code>.</p>
+  </div>
+  <aside class="run-status">
+    <h3>Configuration File</h3>
+    <p class="status-value">config.yaml</p>
+    <p class="meta">{{ config_path }}</p>
+    <p class="meta">Scheduler: {{ 'Enabled' if scheduler_enabled else 'Disabled' }}</p>
+    <button type="button" id="open-run-log" class="btn btn-secondary">View Run Log</button>
+  </aside>
+</section>
+
+<form action="{{ url_for('save_settings') }}" method="post" class="settings-form">
+  <section class="section-block">
+    <div class="section-head inline-actions">
+      <h2>Accounts</h2>
+      <button type="button" class="btn btn-secondary add-row" data-target="accounts">Add Account</button>
+    </div>
+    <div id="accounts-rows">
+      {% for account in config.accounts %}
+      <article class="row-card">
+        <div class="row-grid row-grid-account">
+          <label>Email<input name="account_username[]" value="{{ account.username }}"></label>
+          <label>Password<input name="account_password[]" value="{{ account.password }}" type="password"></label>
+          <label>Cruise Line
+            <select name="account_cruise_line[]">
+              <option value="royal" {% if account.cruise_line == 'royal' %}selected{% endif %}>royal</option>
+              <option value="celebrity" {% if account.cruise_line == 'celebrity' %}selected{% endif %}>celebrity</option>
+            </select>
+          </label>
+          <label>C&A Number<input name="account_cna_number[]" value="{{ account.cna_number }}"></label>
+          <label>Last Name<input name="account_last_name[]" value="{{ account.last_name }}"></label>
+        </div>
+        <button type="button" class="btn btn-ghost remove-row">Remove</button>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="section-block">
+    <div class="section-head inline-actions">
+      <h2>Cruise Watchlist</h2>
+      <button type="button" class="btn btn-secondary add-row" data-target="cruises">Add Cruise</button>
+    </div>
+    <div id="cruises-rows">
+      {% for cruise in config.cruise_watchlist %}
+      <article class="row-card">
+        <div class="row-grid row-grid-cruise">
+          <label>Checkout URL<input name="cruise_url[]" value="{{ cruise.url }}"></label>
+          <label>Paid Price<input name="cruise_paid_price[]" value="{{ cruise.paid_price }}"></label>
+          <label>Label<input name="cruise_label[]" value="{{ cruise.label }}"></label>
+        </div>
+        <button type="button" class="btn btn-ghost remove-row">Remove</button>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="section-block">
+    <div class="section-head inline-actions">
+      <h2>Notifications</h2>
+      <button type="button" class="btn btn-secondary add-row" data-target="notifications">Add Destination</button>
+    </div>
+    <div id="notifications-rows">
+      {% for item in config.notifications %}
+      <article class="row-card row-inline">
+        <label>Apprise URL<input name="notification_url[]" value="{{ item.url if item.url is defined else item }}"></label>
+        <button type="button" class="btn btn-ghost remove-row">Remove</button>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="section-block">
+    <div class="section-head">
+      <h2>Global Settings</h2>
+      <p>Tracking behavior, scheduling, and thresholds.</p>
+    </div>
+    <div class="row-grid row-grid-settings">
+      <label><input type="checkbox" name="addon_enabled" {% if config.addon_tracking.enabled %}checked{% endif %}> Enable add-on tracking</label>
+      <label>Add-on Categories (comma-separated)<input name="addon_categories" value="{{ (config.addon_tracking.categories or [])|join(', ') }}"></label>
+
+      <label><input type="checkbox" name="casino_enabled" {% if config.casino_tracking.enabled %}checked{% endif %}> Enable casino tracking</label>
+      <label><input type="checkbox" name="casino_notify_new_offers" {% if config.casino_tracking.notify_new_offers %}checked{% endif %}> Notify new casino offers</label>
+
+      <label>Schedule Times (HH:MM comma-separated)<input name="schedule_times" value="{{ (config.schedule.times or ['07:00','19:00'])|join(',') }}"></label>
+      <label>Timezone<input name="schedule_timezone" value="{{ config.schedule.timezone or 'America/New_York' }}"></label>
+
+      <label>Currency<input name="currency" value="{{ config.settings.currency or 'USD' }}"></label>
+      <label>Minimum Savings Threshold<input name="min_savings_threshold" value="{{ config.settings.min_savings_threshold or 5.0 }}"></label>
+
+      <label>Price History Days<input name="price_history_days" value="{{ config.settings.price_history_days or 90 }}"></label>
+      <label><input type="checkbox" name="apprise_test" {% if config.settings.apprise_test %}checked{% endif %}> Send Apprise test on startup</label>
+    </div>
+  </section>
+
+  <section class="action-row">
+    <button type="submit" class="btn btn-primary">Save Settings</button>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+  </section>
+</form>
+
+<template id="template-account-row">
+  <article class="row-card">
+    <div class="row-grid row-grid-account">
+      <label>Email<input name="account_username[]"></label>
+      <label>Password<input name="account_password[]" type="password"></label>
+      <label>Cruise Line
+        <select name="account_cruise_line[]">
+          <option value="royal" selected>royal</option>
+          <option value="celebrity">celebrity</option>
+        </select>
+      </label>
+      <label>C&A Number<input name="account_cna_number[]"></label>
+      <label>Last Name<input name="account_last_name[]"></label>
+    </div>
+    <button type="button" class="btn btn-ghost remove-row">Remove</button>
+  </article>
+</template>
+
+<template id="template-cruise-row">
+  <article class="row-card">
+    <div class="row-grid row-grid-cruise">
+      <label>Checkout URL<input name="cruise_url[]"></label>
+      <label>Paid Price<input name="cruise_paid_price[]" value="0.0"></label>
+      <label>Label<input name="cruise_label[]"></label>
+    </div>
+    <button type="button" class="btn btn-ghost remove-row">Remove</button>
+  </article>
+</template>
+
+<template id="template-notification-row">
+  <article class="row-card row-inline">
+    <label>Apprise URL<input name="notification_url[]"></label>
+    <button type="button" class="btn btn-ghost remove-row">Remove</button>
+  </article>
+</template>
+
+<div id="run-log-modal" class="modal" hidden>
+  <div class="modal-backdrop" data-close-modal></div>
+  <div class="modal-dialog">
+    <div class="section-head inline-actions">
+      <h2>Run Log</h2>
+      <button type="button" class="btn btn-ghost" data-close-modal>Close</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Module</th>
+            <th>Status</th>
+            <th>Message</th>
+          </tr>
+        </thead>
+        <tbody id="run-log-body">
+          <tr><td colspan="4">Loading run logs...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

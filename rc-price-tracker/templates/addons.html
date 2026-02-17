@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Add-ons Explorer | Royal Caribbean Price Companion{% endblock %}
+{% block content %}
+<section class="hero-banner hero-addons">
+    <div>
+        <span class="eyebrow">Add-on Tracker</span>
+        <h1>Add-ons Explorer</h1>
+        <p>Browse available add-ons and track your purchased prices across any sailing.</p>
+    </div>
+</section>
+
+<section class="section-block">
+    <div class="section-head">
+        <div>
+            <h2>Select a Sailing</h2>
+            <p>Choose any RC ship & enter a sail date to browse available add-ons</p>
+        </div>
+    </div>
+
+    <div class="addons-filter-bar" id="addons-filter-bar">
+        <div class="filter-group">
+            <label for="filter-ship">Ship</label>
+            <select id="filter-ship" aria-label="Select Ship">
+                <option value="">Loading ships...</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="filter-date">Sail Date</label>
+            <input type="date" id="filter-date" aria-label="Sail Date" placeholder="YYYY-MM-DD">
+        </div>
+        <button id="filter-go" class="btn btn-primary" disabled>
+            <span id="filter-go-text">View Add-ons</span>
+        </button>
+    </div>
+</section>
+
+<section class="section-block" id="addons-results" style="display: none;">
+    <div class="addons-summary-strip" id="addons-summary">
+        <!-- Populated by JS -->
+    </div>
+
+    <div class="addons-tabs">
+        <button class="tab-btn active" data-tab="purchased">My Purchases</button>
+        <button class="tab-btn" data-tab="available">Available</button>
+    </div>
+
+    <div class="tab-panel active" id="panel-purchased">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Add-on</th>
+                        <th>Guest</th>
+                        <th>Paid</th>
+                        <th>Current</th>
+                        <th>Savings</th>
+                    </tr>
+                </thead>
+                <tbody id="purchased-body">
+                    <tr>
+                        <td colspan="5" style="text-align:center; color: var(--text-muted);">Select a sailing to view
+                            add-ons.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="tab-panel" id="panel-available">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Add-on</th>
+                        <th>Category</th>
+                        <th>Regular</th>
+                        <th>Current Price</th>
+                    </tr>
+                </thead>
+                <tbody id="available-body">
+                    <tr>
+                        <td colspan="4" style="text-align:center; color: var(--text-muted);">Select a sailing to view
+                            add-ons.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<footer class="page-footer"
+    style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line);">
+    <p>RC Price Companion &bull; {{ config_path }}</p>
+</footer>
+{% endblock %}

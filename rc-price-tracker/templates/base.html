@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Royal Caribbean Price Companion{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css', v='ui-rebuild-2') }}">
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="shell top-row">
+      <a href="{{ url_for('dashboard') }}" class="brand">
+        <span class="brand-badge">RC</span>
+        <span>
+          <strong>Royal Caribbean Price Companion</strong>
+          <small>Booked Cruises, Watchlist, Add-ons, Offers</small>
+        </span>
+      </a>
+      <nav class="main-nav">
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('addons_page') }}">Add-ons</a>
+        <a href="{{ url_for('settings_page') }}">Settings</a>
+        <a href="{{ url_for('health') }}">Health</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="shell page-content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <section class="flash-stack">
+      {% for category, message in messages %}
+      <article class="flash flash-{{ category }}">{{ message }}</article>
+      {% endfor %}
+    </section>
+    {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="{{ url_for('static', filename='app.js', v='ui-rebuild-2') }}"></script>
+</body>
+
+</html>

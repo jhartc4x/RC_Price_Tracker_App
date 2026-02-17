@@ -1,0 +1,27 @@
+accounts:
+- username: hartung.josh@gmail.com
+  password: foggEw-rosri5-xexjig
+  cruise_line: royal
+  cna_number: '392421073'
+  last_name: HARTUNG
+cruise_watchlist:
+- url: https://www.royalcaribbean.com/checkout/guest-info?groupId=IC07MIA-3946942121&packageCode=IC07E481&sailDate=2026-06-20&country=USA&selectedCurrencyCode=USD&shipCode=IC&cabinClassType=INTERIOR&roomIndex=0&r0a=2&r0c=0&r0b=n&r0l=392421073&r0r=n&r0s=n&r0q=n&r0t=n&r0d=INTERIOR&r0D=y&rgVisited=true&r0C=y&r0e=ZI&r0f=ZI&r0g=BESTRATE&r0h=n&r0A=3464.7&r0p=O
+  paid_price: 1317.0
+  label: ''
+addon_tracking:
+  enabled: true
+casino_tracking:
+  enabled: true
+  notify_new_offers: true
+schedule:
+  times:
+  - 07:00
+  - '19:00'
+  timezone: America/New_York
+notifications:
+- url: mailto://yourgmail:apppassword@gmail.com
+settings:
+  currency: USD
+  min_savings_threshold: 5.0
+  price_history_days: 90
+  apprise_test: false

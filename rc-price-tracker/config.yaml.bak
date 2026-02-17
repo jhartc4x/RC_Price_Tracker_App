@@ -1,0 +1,24 @@
+accounts:
+- username: hartung.josh@gmail.com
+  password: foggEw-rosri5-xexjig
+  cruise_line: royal
+  cna_number: '392421073'
+  last_name: HARTUNG
+cruise_watchlist: []
+addon_tracking:
+  enabled: true
+casino_tracking:
+  enabled: true
+  notify_new_offers: true
+schedule:
+  times:
+  - 07:00
+  - '19:00'
+  timezone: America/New_York
+notifications:
+- url: mailto://yourgmail:apppassword@gmail.com
+settings:
+  currency: USD
+  min_savings_threshold: 5.0
+  price_history_days: 90
+  apprise_test: false
