@@ -23,22 +23,15 @@
       </a>
 
       <nav class="main-nav" aria-label="Primary navigation">
-        <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">Dashboard</a>
-        <a href="{{ url_for('cruises_page') }}" class="{% if request.endpoint == 'cruises_page' %}active{% endif %}">Cruises</a>
-        <a href="{{ url_for('addons_page') }}" class="{% if request.endpoint == 'addons_page' %}active{% endif %}">Add-ons</a>
-        <a href="{{ url_for('settings_page') }}" class="{% if request.endpoint == 'settings_page' %}active{% endif %}">Settings</a>
-        <a href="{{ url_for('health') }}" class="{% if request.endpoint == 'health' %}active{% endif %}">Health</a>
+        <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}"><span class="nav-ic">🏠</span><span>Dashboard</span></a>
+        <a href="{{ url_for('cruises_page') }}" class="{% if request.endpoint == 'cruises_page' %}active{% endif %}"><span class="nav-ic">🚢</span><span>Cruises</span></a>
+        <a href="{{ url_for('addons_page') }}" class="{% if request.endpoint == 'addons_page' %}active{% endif %}"><span class="nav-ic">🧾</span><span>Add-ons</span></a>
+        <a href="{{ url_for('settings_page') }}" class="{% if request.endpoint == 'settings_page' %}active{% endif %}"><span class="nav-ic">⚙️</span><span>Settings</span></a>
+        <a href="{{ url_for('health') }}" class="{% if request.endpoint == 'health' %}active{% endif %}"><span class="nav-ic">💚</span><span>Health</span></a>
       </nav>
     </aside>
 
     <div class="workspace">
-      <header class="topbar">
-        <div>
-          <h1>Royal Caribbean Price Companion</h1>
-          <p class="meta">Spotify-style workspace layout</p>
-        </div>
-      </header>
-
       <main class="page-content">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}

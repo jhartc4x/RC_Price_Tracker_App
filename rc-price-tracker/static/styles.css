@@ -41,7 +41,17 @@ a { color: inherit; text-decoration: none; }
 .brand small { color: var(--muted); font-size: .73rem; display:block; }
 
 .main-nav { display: grid; gap: 6px; }
-.main-nav a { padding: 10px 12px; border-radius: 10px; color: #c4cbda; font-weight: 700; font-size: .86rem; }
+.main-nav a {
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #c4cbda;
+  font-weight: 700;
+  font-size: .86rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav-ic { width: 18px; text-align: center; font-size: 1rem; }
 .main-nav a:hover { background: #131824; }
 .main-nav a.active { background: #1a2233; color: #fff; border: 1px solid #2f3a54; }
 
@@ -52,18 +62,6 @@ a { color: inherit; text-decoration: none; }
   min-height: calc(100vh - 20px);
   overflow: hidden;
 }
-
-.topbar {
-  height: 64px;
-  border-bottom: 1px solid var(--line);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 18px;
-  background: rgba(20, 24, 35, 0.75);
-}
-.topbar h1 { margin: 0; font-size: 1rem; }
-.topbar .meta { margin: 0; color: var(--muted); font-size: .75rem; }
 
 .page-content { padding: 14px; }
 
