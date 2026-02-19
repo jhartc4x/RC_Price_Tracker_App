@@ -15,18 +15,7 @@
     </div>
   </div>
 
-  <div class="head-controls">
-    <form action="{{ url_for('run_now') }}" method="post" class="run-form">
-      <select id="module" name="module" aria-label="Select Module">
-        <option value="all">Run All Checks</option>
-        <option value="cruise">Cruise Fares Only</option>
-        <option value="addons">Add-ons Only</option>
-        <option value="casino">Casino Offers Only</option>
-      </select>
-      <button type="submit" class="btn btn-primary">Run Now</button>
-    </form>
-    <a class="btn btn-secondary" href="{{ url_for('settings_page') }}">Settings</a>
-  </div>
+  <!-- controls moved to sidebar -->
 
   <div id="run-status-meta" class="meta" style="display:none;">Module: {{ 'All Systems' if run_state.module == 'all' else run_state.module|title }}{% if run_state.started_at %} · Started: {{ run_state.started_at|truncate(16, True, '') }}{% endif %}</div>
   <div id="run-status-message" class="meta" style="display:none;">{{ run_state.message }}</div>
