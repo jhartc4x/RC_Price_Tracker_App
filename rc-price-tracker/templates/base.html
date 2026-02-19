@@ -8,17 +8,17 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css', v='ipad-ui-1') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css', v='spotify-ui-1') }}">
 </head>
 
 <body>
-  <header class="site-header">
-    <div class="shell top-row">
+  <div class="app-shell">
+    <aside class="sidebar">
       <a href="{{ url_for('dashboard') }}" class="brand">
         <span class="brand-badge">RC</span>
         <span>
-          <strong>Royal Caribbean Price Companion</strong>
-          <small>Modern pricing intelligence dashboard</small>
+          <strong>RC Price Companion</strong>
+          <small>Pricing intelligence</small>
         </span>
       </a>
 
@@ -29,24 +29,33 @@
         <a href="{{ url_for('settings_page') }}" class="{% if request.endpoint == 'settings_page' %}active{% endif %}">Settings</a>
         <a href="{{ url_for('health') }}" class="{% if request.endpoint == 'health' %}active{% endif %}">Health</a>
       </nav>
+    </aside>
+
+    <div class="workspace">
+      <header class="topbar">
+        <div>
+          <h1>Royal Caribbean Price Companion</h1>
+          <p class="meta">Spotify-style workspace layout</p>
+        </div>
+      </header>
+
+      <main class="page-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <section class="flash-stack">
+          {% for category, message in messages %}
+          <article class="flash flash-{{ category }}">{{ message }}</article>
+          {% endfor %}
+        </section>
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+      </main>
     </div>
-  </header>
+  </div>
 
-  <main class="shell page-content">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    <section class="flash-stack">
-      {% for category, message in messages %}
-      <article class="flash flash-{{ category }}">{{ message }}</article>
-      {% endfor %}
-    </section>
-    {% endif %}
-    {% endwith %}
-
-    {% block content %}{% endblock %}
-  </main>
-
-  <script src="{{ url_for('static', filename='app.js', v='ipad-ui-1') }}"></script>
+  <script src="{{ url_for('static', filename='app.js', v='spotify-ui-1') }}"></script>
 </body>
 
 </html>
