@@ -73,7 +73,7 @@ a { color: inherit; text-decoration: none; }
 
 .hero-banner {
   display: grid;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: 1fr;
   gap: 12px;
   padding: 16px;
   border-radius: var(--radius);
@@ -84,9 +84,28 @@ a { color: inherit; text-decoration: none; }
 .hero-banner h1 { margin: 6px 0; font-size: 1.85rem; }
 .hero-banner p { margin: 0; color: #c4cde2; }
 
-.run-status { background: rgba(8,11,18,.55); border: 1px solid #3a465f; border-radius: 12px; padding: 12px; }
-.run-status h3 { margin: 0 0 6px; font-size: .72rem; text-transform: uppercase; color: #b8c4e4; }
-.status-value { font-size: 1.08rem; font-weight: 800; }
+.dashboard-head {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+.dashboard-head h1 { margin: 6px 0 4px; font-size: 1.6rem; }
+.dashboard-head p { margin: 0; color: #b4c0de; }
+.head-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.status-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  background: #20283a;
+  border: 1px solid #34405b;
+  color: #c5d1ee;
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: .78rem;
+}
+.chip strong { color: #e8efff; }
+
 .meta { color: var(--muted); font-size: .82rem; margin-top: 6px; }
 
 .action-row, .run-form { display: flex; gap: 8px; flex-wrap: wrap; }
