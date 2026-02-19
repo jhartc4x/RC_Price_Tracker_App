@@ -5,11 +5,9 @@
   <div>
     <span class="eyebrow">Price Command Center</span>
     <h1>Your Cruise Dashboard</h1>
-    <p>
-      Monitor your booked cruises, track new watchlist items, and catch price drops on add-ons before they disappear.
-    </p>
+    <p>A calmer command view: what needs attention now, what changed recently, and where savings exist.</p>
 
-    <div class="action-row" style="margin-top: 24px;">
+    <div class="action-row" style="margin-top: 14px;">
       <form action="{{ url_for('run_now') }}" method="post" class="run-form">
         <select id="module" name="module" aria-label="Select Module">
           <option value="all">Run All Checks</option>
@@ -27,11 +25,7 @@
     <h3>System Status</h3>
     <div id="run-status-value" class="status-value">{{ run_state.status|title }}</div>
     <p id="run-status-meta" class="meta">
-      {% if run_state.module == 'all' %}
-      Module: All Systems
-      {% else %}
-      Module: {{ run_state.module|title }}
-      {% endif %}
+      Module: {{ 'All Systems' if run_state.module == 'all' else run_state.module|title }}
       {% if run_state.started_at %} | Started: {{ run_state.started_at|truncate(16, True, '') }}{% endif %}
     </p>
     <p id="run-status-message" class="meta" style="margin-top: 8px; opacity: 1;">{{ run_state.message }}</p>
@@ -39,289 +33,147 @@
 </section>
 
 <section class="metrics-grid">
-  <article class="metric">
-    <span>Booked Cruises</span>
-    <strong>{{ booked_cruises|length }}</strong>
-  </article>
-  <article class="metric">
-    <span>Watchlist Items</span>
-    <strong>{{ watchlist_cruises|length }}</strong>
-  </article>
-  <article class="metric">
-    <span>Price Records</span>
-    <strong>{{ metrics.price_records }}</strong>
-  </article>
-  <article class="metric">
-    <span>Active Alerts</span>
-    <strong>{{ metrics.alerts_sent }}</strong>
-  </article>
+  <article class="metric"><span>Booked Cruises</span><strong>{{ booked_cruises|length }}</strong></article>
+  <article class="metric"><span>Watchlist Items</span><strong>{{ watchlist_cruises|length }}</strong></article>
+  <article class="metric"><span>Price Records</span><strong>{{ metrics.price_records }}</strong></article>
+  <article class="metric"><span>Active Alerts</span><strong>{{ metrics.alerts_sent }}</strong></article>
 </section>
 
-<section id="booked-cruises" class="section-block">
-  <div class="section-head">
-    <div>
-      <h2>Booked Cruises</h2>
-      <p> synced from your Royal Caribbean account</p>
-    </div>
-  </div>
-
-  {% if booked_cruises %}
-  <div class="cruise-grid">
-    {% for cruise in booked_cruises %}
-    <article class="cruise-card">
-      <header>
-        <h3>{{ cruise.ship_name }}</h3>
-        <p>{{ cruise.sail_date or 'Unknown Date' }} &bull; {{ cruise.ship_code }}</p>
-      </header>
-
-      <div class="card-body">
-        <div class="meta-grid">
-          <div class="meta-item">
-            <label>Reservation</label>
-            <span>{{ cruise.reservation_id or '-' }}</span>
-          </div>
-          <div class="meta-item">
-            <label>Stateroom</label>
-            <span>{{ cruise.stateroom_number or '-' }}</span>
-          </div>
-          <div class="meta-item">
-            <label>Guests</label>
-            <span>{{ cruise.guest_count or '-' }}</span>
-          </div>
-          <div class="meta-item">
-            <label>Alerts</label>
-            <span style="color: {{ 'var(--err)' if cruise.addon_alert_count > 0 else 'inherit' }}">
-              {{ cruise.addon_alert_count }}
-            </span>
-          </div>
-        </div>
-
-        <details class="addons-detail">
-          <summary>
-            <span>Tracked Add-ons ({{ cruise.addon_count }})</span>
-          </summary>
-          {% if cruise.addons %}
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Add-on</th>
-                  <th>Current</th>
-                  <th>Paid</th>
-                  <th>Save</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for addon in cruise.addons %}
-                {% set paid = addon.paid_price if addon.paid_price is not none else 0 %}
-                {% set current = addon.current_price if addon.current_price is not none else 0 %}
-                {% set savings = paid - current %}
-                <tr>
-                  <td>
-                    <strong>{{ addon.product_name }}</strong><br>
-                    <small class="meta">{{ addon.passenger_name }}</small>
-                  </td>
-                  <td>{{ "%.2f"|format(current) }}</td>
-                  <td>{{ "%.2f"|format(paid) if addon.paid_price is not none else '-' }}</td>
-                  <td>
-                    {% if savings > 0 %}
-                    <span style="color: var(--ok); font-weight: 700;">-${{ "%.2f"|format(savings) }}</span>
-                    {% else %}
-                    <span class="meta">-</span>
-                    {% endif %}
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-          {% else %}
-          <div style="padding: 16px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
-            No add-ons found for this reservation.
-          </div>
-          {% endif %}
-        </details>
+<section class="section-block dashboard-stack">
+  <article class="focus-card">
+    <div class="section-head" style="margin-bottom: 8px;">
+      <div>
+        <h2>What needs attention</h2>
+        <p>Prioritized, low-noise summary</p>
       </div>
-    </article>
-    {% endfor %}
-  </div>
-  {% else %}
-  <div class="empty-state">
-    <h3>No Bookings Found</h3>
-    <p>Run <strong>Add-ons Only</strong> to sync your reservations from Royal Caribbean.</p>
-  </div>
-  {% endif %}
-</section>
-
-<section id="watchlist-cruises" class="section-block">
-  <div class="section-head">
-    <div>
-      <h2>Watchlist</h2>
-      <p>Tracking fares for potential cruises</p>
+      {% if recent_offers|length > 5 %}
+      <button class="btn btn-secondary" type="button" data-open-modal="all-offers-modal">View all offers</button>
+      {% endif %}
     </div>
-  </div>
 
-  {% if watchlist_cruises %}
-  <div class="cruise-grid">
-    {% for watch in watchlist_cruises %}
-    <article class="watch-card">
-      <header>
-        <h3>{{ watch.label }}</h3>
-        <p>{{ watch.ship_code }} &bull; {{ watch.sail_date }}</p>
-      </header>
+    <ul class="focus-list">
+      <li>
+        <span>Booked sailings currently tracked</span>
+        <strong>{{ booked_cruises|length }}</strong>
+      </li>
+      <li>
+        <span>Watchlist items with latest pricing</span>
+        <strong>{{ watchlist_cruises|length }}</strong>
+      </li>
+      <li>
+        <span>Casino offers available</span>
+        <strong>{{ recent_offers|length }}</strong>
+      </li>
+    </ul>
+  </article>
 
-      <div class="card-body">
-        <div class="meta-grid">
-          <div class="meta-item">
-            <label>Paid Price</label>
-            <span>${{ "%.2f"|format(watch.paid_price or 0) }}</span>
-          </div>
-          <div class="meta-item">
-            <label>Current Price</label>
-            {% if watch.latest_cruise_price is not none %}
-            <span class="price-tag">${{ "%.2f"|format(watch.latest_cruise_price) }}</span>
-            {% else %}
-            <span class="meta">Pending...</span>
-            {% endif %}
-          </div>
-        </div>
-
-        {% if watch.latest_cruise_price is not none and (watch.paid_price or 0) > 0 %}
-        {% set savings = (watch.paid_price or 0) - watch.latest_cruise_price %}
-        {% if savings > 0 %}
-        <div class="flash flash-success" style="margin-top: 12px; margin-bottom: 0;">
-          <strong>Price Drop!</strong>&nbsp;Save ${{ "%.2f"|format(savings) }} if you reprice now.
-        </div>
-        {% endif %}
-        {% endif %}
-
-        <div style="margin-top: 16px;">
-          <p class="meta" style="font-size: 0.8rem;">Last checked: {{ watch.latest_checked_at or 'Never' }}</p>
-        </div>
+  <article class="focus-card">
+    <div class="section-head" style="margin-bottom: 8px;">
+      <div>
+        <h2>Watchlist opportunities</h2>
+        <p>Highest signal first</p>
       </div>
-    </article>
-    {% endfor %}
-  </div>
-  {% else %}
-  <div class="empty-state">
-    <h3>Watchlist Empty</h3>
-    <p>Go to <strong>Settings</strong> to add a cruise URL to track.</p>
-  </div>
-  {% endif %}
+    </div>
+
+    {% if watchlist_cruises %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Cruise</th>
+            <th>Paid</th>
+            <th>Current</th>
+            <th>Delta</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for watch in watchlist_cruises[:5] %}
+          {% set current = watch.latest_cruise_price if watch.latest_cruise_price is not none else 0 %}
+          {% set paid = watch.paid_price or 0 %}
+          {% set delta = paid - current if current else 0 %}
+          <tr>
+            <td>{{ watch.label }}</td>
+            <td>${{ "%.2f"|format(paid) }}</td>
+            <td>{% if watch.latest_cruise_price is not none %}${{ "%.2f"|format(current) }}{% else %}-{% endif %}</td>
+            <td>
+              {% if delta > 0 %}
+              <span style="color: var(--ok); font-weight: 700;">-${{ "%.2f"|format(delta) }}</span>
+              {% else %}
+              <span class="meta">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <p>No watchlist items yet. Add one in settings.</p>
+    </div>
+    {% endif %}
+  </article>
+
+  <article class="focus-card">
+    <div class="section-head" style="margin-bottom: 8px;">
+      <div>
+        <h2>Latest casino offers</h2>
+        <p>Showing top 5</p>
+      </div>
+      {% if recent_offers %}
+      <button class="btn btn-secondary" type="button" data-open-modal="all-offers-modal">Expand</button>
+      {% endif %}
+    </div>
+
+    {% if recent_offers %}
+    <div class="offer-list">
+      {% for offer in recent_offers[:5] %}
+      <article class="offer-row">
+        <div>
+          <strong>{{ offer.offer_name }}</strong>
+          <p>{{ offer.offer_code }} • {{ offer.account_username }}</p>
+        </div>
+        <span class="offer-date">{{ offer.expiry_date or 'N/A' }}</span>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state"><p>No offers found yet.</p></div>
+    {% endif %}
+  </article>
 </section>
 
-<section class="section-block two-col">
-  <article>
-    <div class="section-head">
-      <h2>Recent Add-on Activity</h2>
+<div id="all-offers-modal" class="modal" hidden>
+  <div class="modal-backdrop" data-close-modal></div>
+  <div class="modal-dialog">
+    <div class="section-head inline-actions">
+      <h2>All Casino Offers</h2>
+      <button type="button" class="btn btn-ghost" data-close-modal>Close</button>
     </div>
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th>Date</th>
-            <th>Item</th>
-            <th>Price</th>
+            <th>Offer</th>
+            <th>Code</th>
+            <th>Account</th>
+            <th>Expires</th>
           </tr>
         </thead>
         <tbody>
-          {% if recent_addons %}
-          {% for row in recent_addons %}
+          {% for offer in recent_offers %}
           <tr>
-            <td style="white-space: nowrap;">{{ row.check_date|truncate(10, True, '') }}</td>
-            <td>
-              {{ row.product_name }}
-              <div style="font-size: 0.75rem; color: var(--text-muted);">{{ row.account_username }}</div>
-            </td>
-            <td>${{ row.current_price }}</td>
+            <td>{{ offer.offer_name }}</td>
+            <td>{{ offer.offer_code }}</td>
+            <td>{{ offer.account_username }}</td>
+            <td>{{ offer.expiry_date or 'N/A' }}</td>
           </tr>
           {% endfor %}
-          {% else %}
-          <tr>
-            <td colspan="3" style="text-align: center; color: var(--text-muted);">No history yet.</td>
-          </tr>
-          {% endif %}
         </tbody>
       </table>
     </div>
-  </article>
+  </div>
+</div>
 
-  <article>
-    <div class="section-head">
-      <h2>Casino Offers</h2>
-    </div>
-    <div class="cruise-grid">
-      {% if recent_offers %}
-      {% for offer in recent_offers %}
-      <article class="cruise-card" style="border-left: 4px solid var(--accent);">
-        <header>
-          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div>
-              <h3>{{ offer.offer_name }}</h3>
-              <p style="font-size: 0.85rem; opacity: 0.8;">{{ offer.offer_code }} &bull; {{ offer.room_type }}</p>
-            </div>
-            {% if offer.is_new %}
-            <span
-              style="background: var(--accent); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold;">NEW</span>
-            {% endif %}
-          </div>
-        </header>
-        <div class="card-body">
-          <div class="meta-grid">
-            <div class="meta-item">
-              <label>Expiration</label>
-              <span style="color: var(--err); font-weight: 500;">
-                {{ offer.expiry_date or 'Unknown' }}
-              </span>
-            </div>
-            <div class="meta-item">
-              <label>Account</label>
-              <span>{{ offer.account_username }}</span>
-            </div>
-          </div>
-
-          {% if offer.description %}
-          <p style="margin-top: 12px; font-size: 0.9rem; line-height: 1.4;">
-            {{ offer.description }}
-          </p>
-          {% endif %}
-
-          <details class="addons-detail" style="margin-top: 12px;">
-            <summary>
-              <span>Sailings ({{ offer.sailing_count }})</span>
-            </summary>
-            <div
-              style="padding: 8px 12px; background: var(--bg-subtle); border-radius: 8px; margin-top: 8px; font-size: 0.85rem;">
-              {% if offer.sailings %}
-              <ul style="padding-left: 20px; margin: 0;">
-                {% for sailing in offer.sailings %}
-                <li>{{ sailing }}</li>
-                {% endfor %}
-              </ul>
-              {% else %}
-              <p style="margin: 0; opacity: 0.7;">
-                Specific sailings available.
-                <a href="https://www.royalcaribbean.com/club-royale/offers/" target="_blank"
-                  style="color: var(--accent); text-decoration: underline;">View details on Club Royale</a>
-              </p>
-              {% endif %}
-            </div>
-          </details>
-        </div>
-      </article>
-      {% endfor %}
-      {% else %}
-      <div class="empty-state">
-        <h3>No Offers Found</h3>
-        <p>Run <strong>Casino Offers</strong> to sync with Club Royale.</p>
-      </div>
-      {% endif %}
-    </div>
-  </article>
-</section>
-
-<footer class="page-footer"
-  style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line);">
-  <p>RC Price Companion &bull; {{ config_path }}</p>
-</footer>
+<footer class="page-footer"><p>RC Price Companion</p></footer>
 {% endblock %}

@@ -140,6 +140,27 @@
     });
   }
 
+  function hookGenericModal() {
+    document.querySelectorAll('[data-open-modal]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const id = button.getAttribute('data-open-modal');
+        const modal = document.getElementById(id);
+        if (modal) {
+          modal.hidden = false;
+        }
+      });
+    });
+
+    document.querySelectorAll('[data-close-modal]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const modal = button.closest('.modal');
+        if (modal) {
+          modal.hidden = true;
+        }
+      });
+    });
+  }
+
   function hookAddonsPage() {
     const shipSelect = document.getElementById('filter-ship');
     const dateSelect = document.getElementById('filter-date');
@@ -553,6 +574,7 @@
   hookDynamicRows();
   hookStatusPolling();
   hookRunLogModal();
+  hookGenericModal();
   hookAddonsPage();
 
   if (document.readyState === 'loading') {
