@@ -3,17 +3,17 @@
 {% block content %}
 <section class="hero-banner hero-addons">
     <div>
-        <span class="eyebrow">Add-on Tracker</span>
-        <h1>Add-ons Explorer</h1>
-        <p>Browse available add-ons and track your purchased prices across any sailing.</p>
+        <span class="eyebrow">Add-on Intelligence</span>
+        <h1>Compare purchased vs live add-on pricing.</h1>
+        <p>Browse sailing-level offers, identify savings quickly, and keep purchased extras optimized.</p>
     </div>
 </section>
 
 <section class="section-block">
     <div class="section-head">
         <div>
-            <h2>Select a Sailing</h2>
-            <p>Choose any RC ship & enter a sail date to browse available add-ons</p>
+            <h2>Select Sailing</h2>
+            <p>Choose ship + sail date to fetch available and purchased add-ons.</p>
         </div>
     </div>
 
@@ -31,15 +31,13 @@
             </select>
         </div>
         <button id="filter-go" class="btn btn-primary" disabled>
-            <span id="filter-go-text">View Add-ons</span>
+            <span id="filter-go-text">Load Add-ons</span>
         </button>
     </div>
 </section>
 
 <section class="section-block" id="addons-results" style="display: none;">
-    <div class="addons-summary-strip" id="addons-summary">
-        <!-- Populated by JS -->
-    </div>
+    <div class="addons-summary-strip" id="addons-summary"></div>
 
     <div class="addons-tabs">
         <button class="tab-btn active" data-tab="purchased">My Purchases</button>
@@ -60,8 +58,7 @@
                 </thead>
                 <tbody id="purchased-body">
                     <tr>
-                        <td colspan="5" style="text-align:center; color: var(--text-muted);">Select a sailing to view
-                            add-ons.</td>
+                        <td colspan="5" style="text-align:center; color: var(--muted);">Select a sailing to view add-ons.</td>
                     </tr>
                 </tbody>
             </table>
@@ -81,8 +78,7 @@
                 </thead>
                 <tbody id="available-body">
                     <tr>
-                        <td colspan="4" style="text-align:center; color: var(--text-muted);">Select a sailing to view
-                            add-ons.</td>
+                        <td colspan="4" style="text-align:center; color: var(--muted);">Select a sailing to view add-ons.</td>
                     </tr>
                 </tbody>
             </table>
@@ -90,8 +86,7 @@
     </div>
 </section>
 
-<footer class="page-footer"
-    style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line);">
-    <p>RC Price Companion &bull; {{ config_path }}</p>
+<footer class="page-footer">
+    <p>RC Price Companion</p>
 </footer>
 {% endblock %}

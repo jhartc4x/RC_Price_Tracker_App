@@ -90,7 +90,7 @@
           </div>
           <div class="meta-item">
             <label>Alerts</label>
-            <span style="color: {{ 'var(--status-err)' if cruise.addon_alert_count > 0 else 'inherit' }}">
+            <span style="color: {{ 'var(--err)' if cruise.addon_alert_count > 0 else 'inherit' }}">
               {{ cruise.addon_alert_count }}
             </span>
           </div>
@@ -125,7 +125,7 @@
                   <td>{{ "%.2f"|format(paid) if addon.paid_price is not none else '-' }}</td>
                   <td>
                     {% if savings > 0 %}
-                    <span style="color: var(--status-ok); font-weight: 700;">-${{ "%.2f"|format(savings) }}</span>
+                    <span style="color: var(--ok); font-weight: 700;">-${{ "%.2f"|format(savings) }}</span>
                     {% else %}
                     <span class="meta">-</span>
                     {% endif %}
@@ -270,7 +270,7 @@
           <div class="meta-grid">
             <div class="meta-item">
               <label>Expiration</label>
-              <span style="color: var(--status-err); font-weight: 500;">
+              <span style="color: var(--err); font-weight: 500;">
                 {{ offer.expiry_date or 'Unknown' }}
               </span>
             </div>

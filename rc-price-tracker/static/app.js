@@ -282,9 +282,9 @@
           // Show error details if present
           if (error) {
             summaryHtml += '<div style="grid-column: 1 / -1; margin-top: 12px; padding: 12px 16px; ' +
-              'background: rgba(255,160,0,0.1); border: 1px solid rgba(255,160,0,0.3); border-radius: 8px; ' +
-              'color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">' +
-              '<strong style="color: #ffa000;">⚠ API Note:</strong> ' + escapeHtml(error) + '</div>';
+              'background: rgba(217,144,26,0.1); border: 1px solid rgba(217,144,26,0.35); border-radius: 8px; ' +
+              'color: var(--text); font-size: 0.9rem; line-height: 1.5;">' +
+              '<strong style="color: #d9901a;">⚠ API Note:</strong> ' + escapeHtml(error) + '</div>';
           }
 
           // Show diagnostics if API was called
@@ -292,7 +292,7 @@
             let diagHtml = '<div style="grid-column: 1 / -1; margin-top: 8px; padding: 10px 14px; ' +
               'background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; ' +
               'font-size: 0.85rem; color: var(--text-muted);">' +
-              '<details><summary style="cursor:pointer; color: var(--text-secondary); font-weight: 500;">API Diagnostics</summary>' +
+              '<details><summary style="cursor:pointer; color: var(--text); font-weight: 600;">API Diagnostics</summary>' +
               '<div style="margin-top: 8px;">';
 
             diagHtml += '<div style="margin-bottom: 6px;">Auth: <strong>' + escapeHtml(diag.auth || 'unknown') + '</strong>' +
@@ -390,8 +390,8 @@
         .catch(() => {
           goBtn.disabled = false;
           goBtnText.textContent = 'View Add-ons';
-          purchasedBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--status-err);">Failed to load add-ons.</td></tr>';
-          availableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--status-err);">Failed to load add-ons.</td></tr>';
+          purchasedBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--err);">Failed to load add-ons.</td></tr>';
+          availableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--err);">Failed to load add-ons.</td></tr>';
         });
     });
   }
@@ -469,7 +469,7 @@
           searchBtnText.textContent = 'Search';
 
           if (data.error) {
-            summaryDiv.innerHTML = `<span style="color:var(--status-err)">Error: ${data.error}</span>`;
+            summaryDiv.innerHTML = `<span style="color:var(--err)">Error: ${data.error}</span>`;
             gridDiv.innerHTML = '';
             return;
           }
@@ -537,7 +537,7 @@
         .catch(err => {
           searchBtn.disabled = false;
           searchBtnText.textContent = 'Search';
-          summaryDiv.innerHTML = `<span style="color:var(--status-err)">Failed to load: ${err}</span>`;
+          summaryDiv.innerHTML = `<span style="color:var(--err)">Failed to load: ${err}</span>`;
           gridDiv.innerHTML = '';
         });
     });
