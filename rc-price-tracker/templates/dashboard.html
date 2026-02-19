@@ -5,7 +5,7 @@
   <div>
     <span class="eyebrow">Price Command Center</span>
     <h1>Your Cruise Dashboard</h1>
-    <p>A calmer command view: what needs attention now, what changed recently, and where savings exist.</p>
+    <p>Prioritized overview for pricing actions, savings opportunities, and current system status.</p>
 
     <div class="action-row" style="margin-top: 14px;">
       <form action="{{ url_for('run_now') }}" method="post" class="run-form">
@@ -39,108 +39,124 @@
   <article class="metric"><span>Active Alerts</span><strong>{{ metrics.alerts_sent }}</strong></article>
 </section>
 
-<section class="section-block dashboard-stack">
-  <article class="focus-card">
-    <div class="section-head" style="margin-bottom: 8px;">
-      <div>
-        <h2>What needs attention</h2>
-        <p>Prioritized, low-noise summary</p>
-      </div>
-      {% if recent_offers|length > 5 %}
-      <button class="btn btn-secondary" type="button" data-open-modal="all-offers-modal">View all offers</button>
-      {% endif %}
-    </div>
-
-    <ul class="focus-list">
-      <li>
-        <span>Booked sailings currently tracked</span>
-        <strong>{{ booked_cruises|length }}</strong>
-      </li>
-      <li>
-        <span>Watchlist items with latest pricing</span>
-        <strong>{{ watchlist_cruises|length }}</strong>
-      </li>
-      <li>
-        <span>Casino offers available</span>
-        <strong>{{ recent_offers|length }}</strong>
-      </li>
-    </ul>
-  </article>
-
-  <article class="focus-card">
-    <div class="section-head" style="margin-bottom: 8px;">
-      <div>
-        <h2>Watchlist opportunities</h2>
-        <p>Highest signal first</p>
-      </div>
-    </div>
-
-    {% if watchlist_cruises %}
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Cruise</th>
-            <th>Paid</th>
-            <th>Current</th>
-            <th>Delta</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for watch in watchlist_cruises[:5] %}
-          {% set current = watch.latest_cruise_price if watch.latest_cruise_price is not none else 0 %}
-          {% set paid = watch.paid_price or 0 %}
-          {% set delta = paid - current if current else 0 %}
-          <tr>
-            <td>{{ watch.label }}</td>
-            <td>${{ "%.2f"|format(paid) }}</td>
-            <td>{% if watch.latest_cruise_price is not none %}${{ "%.2f"|format(current) }}{% else %}-{% endif %}</td>
-            <td>
-              {% if delta > 0 %}
-              <span style="color: var(--ok); font-weight: 700;">-${{ "%.2f"|format(delta) }}</span>
-              {% else %}
-              <span class="meta">—</span>
-              {% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <div class="empty-state">
-      <p>No watchlist items yet. Add one in settings.</p>
-    </div>
-    {% endif %}
-  </article>
-
-  <article class="focus-card">
-    <div class="section-head" style="margin-bottom: 8px;">
-      <div>
-        <h2>Latest casino offers</h2>
-        <p>Showing top 5</p>
-      </div>
-      {% if recent_offers %}
-      <button class="btn btn-secondary" type="button" data-open-modal="all-offers-modal">Expand</button>
-      {% endif %}
-    </div>
-
-    {% if recent_offers %}
-    <div class="offer-list">
-      {% for offer in recent_offers[:5] %}
-      <article class="offer-row">
+<section class="section-block dashboard-layout">
+  <div style="display:grid; gap: 12px;">
+    <article class="panel">
+      <div class="section-head" style="margin-bottom: 8px;">
         <div>
-          <strong>{{ offer.offer_name }}</strong>
-          <p>{{ offer.offer_code }} • {{ offer.account_username }}</p>
+          <h2>What needs attention</h2>
+          <p>Top-level signal only</p>
         </div>
-        <span class="offer-date">{{ offer.expiry_date or 'N/A' }}</span>
-      </article>
-      {% endfor %}
-    </div>
-    {% else %}
-    <div class="empty-state"><p>No offers found yet.</p></div>
-    {% endif %}
-  </article>
+      </div>
+      <ul class="focus-list">
+        <li><span>Booked sailings currently tracked</span><strong>{{ booked_cruises|length }}</strong></li>
+        <li><span>Watchlist items with latest pricing</span><strong>{{ watchlist_cruises|length }}</strong></li>
+        <li><span>Casino offers currently active</span><strong>{{ recent_offers|length }}</strong></li>
+      </ul>
+    </article>
+
+    <article class="panel">
+      <div class="section-head" style="margin-bottom: 8px;">
+        <div>
+          <h2>Watchlist opportunities</h2>
+          <p>Sorted by potential savings</p>
+        </div>
+      </div>
+      {% if watchlist_cruises %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Cruise</th>
+              <th>Paid</th>
+              <th>Current</th>
+              <th>Delta</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for watch in watchlist_cruises[:6] %}
+            {% set current = watch.latest_cruise_price if watch.latest_cruise_price is not none else 0 %}
+            {% set paid = watch.paid_price or 0 %}
+            {% set delta = paid - current if current else 0 %}
+            <tr>
+              <td>{{ watch.label }}</td>
+              <td>${{ "%.2f"|format(paid) }}</td>
+              <td>{% if watch.latest_cruise_price is not none %}${{ "%.2f"|format(current) }}{% else %}-{% endif %}</td>
+              <td>
+                {% if delta > 0 %}
+                <span style="color: var(--ok); font-weight: 700;">-${{ "%.2f"|format(delta) }}</span>
+                {% else %}
+                <span class="meta">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state"><p>No watchlist items yet. Add one in settings.</p></div>
+      {% endif %}
+    </article>
+  </div>
+
+  <div style="display:grid; gap: 12px;">
+    <article class="panel">
+      <div class="section-head" style="margin-bottom: 8px;">
+        <div>
+          <h2>Recent casino offers</h2>
+          <p>Condensed list</p>
+        </div>
+        {% if recent_offers %}
+        <button class="btn btn-secondary" type="button" data-open-modal="all-offers-modal">View all</button>
+        {% endif %}
+      </div>
+
+      {% if recent_offers %}
+      <div class="offer-list">
+        {% for offer in recent_offers[:7] %}
+        <article class="offer-row">
+          <div>
+            <strong>{{ offer.offer_name }}</strong>
+            <p>{{ offer.offer_code }} • {{ offer.account_username }}</p>
+          </div>
+          <span class="offer-date">{{ offer.expiry_date or 'N/A' }}</span>
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state"><p>No offers found yet.</p></div>
+      {% endif %}
+    </article>
+
+    <article class="panel">
+      <div class="section-head" style="margin-bottom: 8px;">
+        <div>
+          <h2>Booked cruises</h2>
+          <p>Quick roster</p>
+        </div>
+      </div>
+      {% if booked_cruises %}
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Ship</th><th>Sail Date</th><th>Stateroom</th><th>Alerts</th></tr></thead>
+          <tbody>
+            {% for cruise in booked_cruises[:8] %}
+            <tr>
+              <td>{{ cruise.ship_name }}</td>
+              <td>{{ cruise.sail_date or '-' }}</td>
+              <td>{{ cruise.stateroom_number or '-' }}</td>
+              <td>{{ cruise.addon_alert_count }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state"><p>No booked cruises found.</p></div>
+      {% endif %}
+    </article>
+  </div>
 </section>
 
 <div id="all-offers-modal" class="modal" hidden>
@@ -152,14 +168,7 @@
     </div>
     <div class="table-wrap">
       <table>
-        <thead>
-          <tr>
-            <th>Offer</th>
-            <th>Code</th>
-            <th>Account</th>
-            <th>Expires</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Offer</th><th>Code</th><th>Account</th><th>Expires</th></tr></thead>
         <tbody>
           {% for offer in recent_offers %}
           <tr>
