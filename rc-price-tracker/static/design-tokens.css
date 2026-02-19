@@ -1,0 +1,48 @@
+:root {
+  /* Color palette */
+  --color-background: #05060c;
+  --color-gradient-start: #15254c;
+  --color-gradient-end: #0b1e33;
+  --color-panel: #0f1220;
+  --color-panel-alt: #171d2b;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-text: #f4f6ff;
+  --color-muted: #9aa4c8;
+  --color-success: #38d18f;
+  --color-warning: #f5b358;
+  --color-danger: #ff6d7a;
+  --color-accent: #5f8cff;
+  --color-accent-2: #57e2c4;
+  --color-shadow: 0 14px 38px rgba(6, 8, 18, 0.75);
+
+  /* Typography */
+  --font-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-heading: 'Space Grotesk', 'Inter', sans-serif;
+  --text-lg: 1.2rem;
+  --text-xl: 1.4rem;
+  --text-xxl: 2rem;
+
+  /* Spacing scale */
+  --space-1: 8px;
+  --space-2: 12px;
+  --space-3: 16px;
+  --space-4: 20px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 40px;
+
+  /* Layout */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 8px 18px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.45);
+
+  /* Breakpoints */
+  --bp-tablet: 980px;
+  --bp-desktop: 1280px;
+
+  /* Status chips */
+  --chip-bg: rgba(255, 255, 255, 0.06);
+  --chip-border: rgba(255, 255, 255, 0.12);
+}
