@@ -23,24 +23,18 @@
     </div>
   </div>
 
-  <aside class="run-status">
+  <aside class="run-status" data-run-status>
     <h3>System Status</h3>
-    <div class="status-value">
-      {{ run_state.status|title }}
-    </div>
-    <p class="meta">
+    <div id="run-status-value" class="status-value">{{ run_state.status|title }}</div>
+    <p id="run-status-meta" class="meta">
       {% if run_state.module == 'all' %}
-      All Systems
+      Module: All Systems
       {% else %}
       Module: {{ run_state.module|title }}
       {% endif %}
+      {% if run_state.started_at %} | Started: {{ run_state.started_at|truncate(16, True, '') }}{% endif %}
     </p>
-    {% if run_state.started_at %}
-    <p class="meta">Started: {{ run_state.started_at|truncate(16, True, '') }}</p>
-    {% endif %}
-    <p class="meta" style="margin-top: 8px; opacity: 1;">
-      {{ run_state.message }}
-    </p>
+    <p id="run-status-message" class="meta" style="margin-top: 8px; opacity: 1;">{{ run_state.message }}</p>
   </aside>
 </section>
 

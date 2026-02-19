@@ -7,10 +7,8 @@
   <title>{% block title %}Royal Caribbean Price Companion{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap"
-    rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css', v='ui-rebuild-2') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css', v='premium-ui-1') }}">
 </head>
 
 <body>
@@ -20,14 +18,16 @@
         <span class="brand-badge">RC</span>
         <span>
           <strong>Royal Caribbean Price Companion</strong>
-          <small>Booked Cruises, Watchlist, Add-ons, Offers</small>
+          <small>Modern pricing intelligence dashboard</small>
         </span>
       </a>
-      <a href="{{ url_for('dashboard') }}">Dashboard</a>
-      <a href="{{ url_for('cruises_page') }}">Cruises</a>
-      <a href="{{ url_for('addons_page') }}">Add-ons</a>
-      <a href="{{ url_for('settings_page') }}">Settings</a>
-      <a href="{{ url_for('health') }}">Health</a>
+
+      <nav class="main-nav" aria-label="Primary navigation">
+        <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">Dashboard</a>
+        <a href="{{ url_for('cruises_page') }}" class="{% if request.endpoint == 'cruises_page' %}active{% endif %}">Cruises</a>
+        <a href="{{ url_for('addons_page') }}" class="{% if request.endpoint == 'addons_page' %}active{% endif %}">Add-ons</a>
+        <a href="{{ url_for('settings_page') }}" class="{% if request.endpoint == 'settings_page' %}active{% endif %}">Settings</a>
+        <a href="{{ url_for('health') }}" class="{% if request.endpoint == 'health' %}active{% endif %}">Health</a>
       </nav>
     </div>
   </header>
@@ -46,7 +46,7 @@
     {% block content %}{% endblock %}
   </main>
 
-  <script src="{{ url_for('static', filename='app.js', v='ui-rebuild-2') }}"></script>
+  <script src="{{ url_for('static', filename='app.js', v='premium-ui-1') }}"></script>
 </body>
 
 </html>
