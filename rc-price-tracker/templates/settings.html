@@ -3,39 +3,42 @@
 {% block content %}
 <section class="hero-banner settings-hero">
   <div>
-    <p class="eyebrow">Configuration</p>
-    <h1>Manage accounts, watchlist, schedule, and notifications.</h1>
-    <p>Edit settings and save directly to <code>config.yaml</code>.</p>
+    <p class="eyebrow">Configuration Studio</p>
+    <h1>Control your accounts, watchlist, alerts, and automation.</h1>
+    <p>Structured for fast edits, low mistakes, and clear operational ownership.</p>
   </div>
   <aside class="run-status">
-    <h3>Configuration File</h3>
+    <h3>Configuration</h3>
     <p class="status-value">config.yaml</p>
     <p class="meta">{{ config_path }}</p>
     <p class="meta">Scheduler: {{ 'Enabled' if scheduler_enabled else 'Disabled' }}</p>
-    <button type="button" id="open-run-log" class="btn btn-secondary">View Run Log</button>
+    <button type="button" id="open-run-log" class="btn btn-secondary" style="margin-top:10px;">View Run Log</button>
   </aside>
 </section>
 
 <form action="{{ url_for('save_settings') }}" method="post" class="settings-form">
   <section class="section-block">
     <div class="section-head inline-actions">
-      <h2>Accounts</h2>
+      <div>
+        <h2>1) Account Access</h2>
+        <p>Credentials and identity fields for Royal/Celebrity lookups.</p>
+      </div>
       <button type="button" class="btn btn-secondary add-row" data-target="accounts">Add Account</button>
     </div>
     <div id="accounts-rows">
       {% for account in config.accounts %}
       <article class="row-card">
         <div class="row-grid row-grid-account">
-          <label>Email<input name="account_username[]" value="{{ account.username }}"></label>
-          <label>Password<input name="account_password[]" value="{{ account.password }}" type="password"></label>
+          <label>Email<input name="account_username[]" value="{{ account.username }}" placeholder="email@example.com"></label>
+          <label>Password<input name="account_password[]" value="{{ account.password }}" type="password" placeholder="••••••••"></label>
           <label>Cruise Line
             <select name="account_cruise_line[]">
-              <option value="royal" {% if account.cruise_line == 'royal' %}selected{% endif %}>royal</option>
-              <option value="celebrity" {% if account.cruise_line == 'celebrity' %}selected{% endif %}>celebrity</option>
+              <option value="royal" {% if account.cruise_line == 'royal' %}selected{% endif %}>Royal Caribbean</option>
+              <option value="celebrity" {% if account.cruise_line == 'celebrity' %}selected{% endif %}>Celebrity</option>
             </select>
           </label>
-          <label>C&A Number<input name="account_cna_number[]" value="{{ account.cna_number }}"></label>
-          <label>Last Name<input name="account_last_name[]" value="{{ account.last_name }}"></label>
+          <label>C&A Number<input name="account_cna_number[]" value="{{ account.cna_number }}" placeholder="12345678"></label>
+          <label>Last Name<input name="account_last_name[]" value="{{ account.last_name }}" placeholder="Hartung"></label>
         </div>
         <button type="button" class="btn btn-ghost remove-row">Remove</button>
       </article>
@@ -45,16 +48,19 @@
 
   <section class="section-block">
     <div class="section-head inline-actions">
-      <h2>Cruise Watchlist</h2>
+      <div>
+        <h2>2) Cruise Watchlist</h2>
+        <p>Every row is a tracked sailing URL with your paid baseline.</p>
+      </div>
       <button type="button" class="btn btn-secondary add-row" data-target="cruises">Add Cruise</button>
     </div>
     <div id="cruises-rows">
       {% for cruise in config.cruise_watchlist %}
       <article class="row-card">
         <div class="row-grid row-grid-cruise">
-          <label>Checkout URL<input name="cruise_url[]" value="{{ cruise.url }}"></label>
-          <label>Paid Price<input name="cruise_paid_price[]" value="{{ cruise.paid_price }}"></label>
-          <label>Label<input name="cruise_label[]" value="{{ cruise.label }}"></label>
+          <label>Checkout URL<input name="cruise_url[]" value="{{ cruise.url }}" placeholder="https://www.royalcaribbean.com/..." ></label>
+          <label>Paid Price<input name="cruise_paid_price[]" value="{{ cruise.paid_price }}" placeholder="1499.00"></label>
+          <label>Label<input name="cruise_label[]" value="{{ cruise.label }}" placeholder="Wonder OTS - Oct 2026"></label>
         </div>
         <button type="button" class="btn btn-ghost remove-row">Remove</button>
       </article>
@@ -64,13 +70,16 @@
 
   <section class="section-block">
     <div class="section-head inline-actions">
-      <h2>Notifications</h2>
+      <div>
+        <h2>3) Notification Destinations</h2>
+        <p>Apprise endpoints for price-drop and offer alerts.</p>
+      </div>
       <button type="button" class="btn btn-secondary add-row" data-target="notifications">Add Destination</button>
     </div>
     <div id="notifications-rows">
       {% for item in config.notifications %}
       <article class="row-card row-inline">
-        <label>Apprise URL<input name="notification_url[]" value="{{ item.url if item.url is defined else item }}"></label>
+        <label>Apprise URL<input name="notification_url[]" value="{{ item.url if item.url is defined else item }}" placeholder="discord://... or mailto://..."></label>
         <button type="button" class="btn btn-ghost remove-row">Remove</button>
       </article>
       {% endfor %}
@@ -79,15 +88,17 @@
 
   <section class="section-block">
     <div class="section-head">
-      <h2>Global Settings</h2>
-      <p>Tracking behavior, scheduling, and thresholds.</p>
+      <div>
+        <h2>4) Tracking + Automation</h2>
+        <p>Behavior controls, schedule cadence, and retention limits.</p>
+      </div>
     </div>
     <div class="row-grid row-grid-settings">
       <label><input type="checkbox" name="addon_enabled" {% if config.addon_tracking.enabled %}checked{% endif %}> Enable add-on tracking</label>
-      <label>Add-on Categories (comma-separated)<input name="addon_categories" value="{{ (config.addon_tracking.categories or [])|join(', ') }}"></label>
+      <label>Add-on Categories (comma-separated)<input name="addon_categories" value="{{ (config.addon_tracking.categories or [])|join(', ') }}" placeholder="Dining, Beverage, Internet"></label>
 
       <label><input type="checkbox" name="casino_enabled" {% if config.casino_tracking.enabled %}checked{% endif %}> Enable casino tracking</label>
-      <label><input type="checkbox" name="casino_notify_new_offers" {% if config.casino_tracking.notify_new_offers %}checked{% endif %}> Notify new casino offers</label>
+      <label><input type="checkbox" name="casino_notify_new_offers" {% if config.casino_tracking.notify_new_offers %}checked{% endif %}> Notify when new casino offers appear</label>
 
       <label>Schedule Times (HH:MM comma-separated)<input name="schedule_times" value="{{ (config.schedule.times or ['07:00','19:00'])|join(',') }}"></label>
       <label>Timezone<input name="schedule_timezone" value="{{ config.schedule.timezone or 'America/New_York' }}"></label>
@@ -100,7 +111,7 @@
     </div>
   </section>
 
-  <section class="action-row">
+  <section class="action-row" style="position: sticky; bottom: 14px; background: rgba(245,247,251,.86); backdrop-filter: blur(8px); padding: 10px; border-radius: 12px; border: 1px solid var(--line);">
     <button type="submit" class="btn btn-primary">Save Settings</button>
     <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
   </section>
@@ -109,12 +120,12 @@
 <template id="template-account-row">
   <article class="row-card">
     <div class="row-grid row-grid-account">
-      <label>Email<input name="account_username[]"></label>
-      <label>Password<input name="account_password[]" type="password"></label>
+      <label>Email<input name="account_username[]" placeholder="email@example.com"></label>
+      <label>Password<input name="account_password[]" type="password" placeholder="••••••••"></label>
       <label>Cruise Line
         <select name="account_cruise_line[]">
-          <option value="royal" selected>royal</option>
-          <option value="celebrity">celebrity</option>
+          <option value="royal" selected>Royal Caribbean</option>
+          <option value="celebrity">Celebrity</option>
         </select>
       </label>
       <label>C&A Number<input name="account_cna_number[]"></label>
@@ -127,7 +138,7 @@
 <template id="template-cruise-row">
   <article class="row-card">
     <div class="row-grid row-grid-cruise">
-      <label>Checkout URL<input name="cruise_url[]"></label>
+      <label>Checkout URL<input name="cruise_url[]" placeholder="https://..." ></label>
       <label>Paid Price<input name="cruise_paid_price[]" value="0.0"></label>
       <label>Label<input name="cruise_label[]"></label>
     </div>
@@ -137,7 +148,7 @@
 
 <template id="template-notification-row">
   <article class="row-card row-inline">
-    <label>Apprise URL<input name="notification_url[]"></label>
+    <label>Apprise URL<input name="notification_url[]" placeholder="mailto:// or discord://"></label>
     <button type="button" class="btn btn-ghost remove-row">Remove</button>
   </article>
 </template>
