@@ -56,14 +56,25 @@
     const valueEl = document.getElementById('run-status-value');
     const metaEl = document.getElementById('run-status-meta');
     const messageEl = document.getElementById('run-status-message');
+    const valueModalEl = document.getElementById('run-status-value-modal');
+    const metaModalEl = document.getElementById('run-status-meta-modal');
+    const messageModalEl = document.getElementById('run-status-message-modal');
 
     const applyState = (state) => {
       if (!valueEl || !metaEl || !messageEl) {
         return;
       }
-      valueEl.textContent = state.status || 'unknown';
-      metaEl.textContent = 'Module: ' + (state.module || 'all') + (state.started_at ? ' | Started: ' + state.started_at : '');
-      messageEl.textContent = state.message || '';
+      const statusText = state.status || 'unknown';
+      const metaText = 'Module: ' + (state.module || 'all') + (state.started_at ? ' | Started: ' + state.started_at : '');
+      const msgText = state.message || '';
+
+      valueEl.textContent = statusText;
+      metaEl.textContent = metaText;
+      messageEl.textContent = msgText;
+
+      if (valueModalEl) valueModalEl.textContent = statusText;
+      if (metaModalEl) metaModalEl.textContent = metaText;
+      if (messageModalEl) messageModalEl.textContent = msgText;
     };
 
     const poll = async () => {

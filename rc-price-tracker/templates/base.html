@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css', v='spotify-ui-1') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css', v='spotify-ui-2') }}">
 </head>
 
 <body>
@@ -29,6 +29,19 @@
         <a href="{{ url_for('settings_page') }}" class="{% if request.endpoint == 'settings_page' %}active{% endif %}"><span class="nav-ic">⚙️</span><span>Settings</span></a>
         <a href="{{ url_for('health') }}" class="{% if request.endpoint == 'health' %}active{% endif %}"><span class="nav-ic">💚</span><span>Health</span></a>
       </nav>
+
+      <section class="sidebar-run">
+        <p class="sidebar-title">Quick Run</p>
+        <form action="{{ url_for('run_now') }}" method="post" class="sidebar-run-form">
+          <select name="module" aria-label="Quick Run Module">
+            <option value="all">All Checks</option>
+            <option value="cruise">Cruise</option>
+            <option value="addons">Add-ons</option>
+            <option value="casino">Casino</option>
+          </select>
+          <button type="submit" class="btn btn-primary">Run</button>
+        </form>
+      </section>
     </aside>
 
     <div class="workspace">
@@ -48,7 +61,7 @@
     </div>
   </div>
 
-  <script src="{{ url_for('static', filename='app.js', v='spotify-ui-1') }}"></script>
+  <script src="{{ url_for('static', filename='app.js', v='spotify-ui-2') }}"></script>
 </body>
 
 </html>

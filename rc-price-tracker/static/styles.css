@@ -33,6 +33,8 @@ a { color: inherit; text-decoration: none; }
   position: sticky;
   top: 10px;
   height: calc(100vh - 20px);
+  display: flex;
+  flex-direction: column;
 }
 
 .brand { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }
@@ -54,6 +56,14 @@ a { color: inherit; text-decoration: none; }
 .nav-ic { width: 18px; text-align: center; font-size: 1rem; }
 .main-nav a:hover { background: #131824; }
 .main-nav a.active { background: #1a2233; color: #fff; border: 1px solid #2f3a54; }
+
+.sidebar-run {
+  margin-top: auto;
+  border-top: 1px solid #232a3b;
+  padding-top: 12px;
+}
+.sidebar-title { margin: 0 0 8px; color: #9aabcf; font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; }
+.sidebar-run-form { display: grid; gap: 8px; }
 
 .workspace {
   background: linear-gradient(180deg, #1a1e29 0%, #11141c 100%);
@@ -94,17 +104,20 @@ a { color: inherit; text-decoration: none; }
 }
 .dashboard-head h1 { margin: 6px 0 4px; font-size: 1.6rem; }
 .dashboard-head p { margin: 0; color: #b4c0de; }
+.head-top { display: flex; justify-content: space-between; gap: 10px; align-items: start; }
 .head-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.status-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip {
+.status-pill-wrap { display: flex; align-items: center; gap: 6px; }
+.status-pill {
   background: #20283a;
   border: 1px solid #34405b;
   color: #c5d1ee;
   border-radius: 999px;
   padding: 7px 10px;
   font-size: .78rem;
+  white-space: nowrap;
 }
-.chip strong { color: #e8efff; }
+.status-pill strong { color: #e8efff; }
+.btn-status { width: 30px; height: 30px; border-radius: 999px; padding: 0; display: inline-grid; place-items: center; font-weight: 800; }
 
 .meta { color: var(--muted); font-size: .82rem; margin-top: 6px; }
 
@@ -203,4 +216,5 @@ label input,label select { margin-top:4px; }
   .addons-filter-bar { grid-template-columns: 1fr; }
   .addons-summary-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .row-grid-account,.row-grid-cruise,.row-grid-settings { grid-template-columns:1fr; }
+  .head-top { flex-direction: column; }
 }

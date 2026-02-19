@@ -2,10 +2,17 @@
 {% block title %}Dashboard | Royal Caribbean Price Companion{% endblock %}
 {% block content %}
 <section class="dashboard-head" data-run-status>
-  <div>
-    <span class="eyebrow">Price Command Center</span>
-    <h1>Your Cruise Dashboard</h1>
-    <p>Prioritized overview for pricing actions, savings opportunities, and current system status.</p>
+  <div class="head-top">
+    <div>
+      <span class="eyebrow">Price Command Center</span>
+      <h1>Your Cruise Dashboard</h1>
+      <p>Prioritized overview for pricing actions, savings opportunities, and current system status.</p>
+    </div>
+
+    <div class="status-pill-wrap">
+      <span class="status-pill"><strong>Status:</strong> <span id="run-status-value">{{ run_state.status|title }}</span></span>
+      <button type="button" class="btn btn-ghost btn-status" data-open-modal="run-status-modal">i</button>
+    </div>
   </div>
 
   <div class="head-controls">
@@ -21,11 +28,8 @@
     <a class="btn btn-secondary" href="{{ url_for('settings_page') }}">Settings</a>
   </div>
 
-  <div class="status-chips">
-    <span class="chip"><strong>Status:</strong> <span id="run-status-value">{{ run_state.status|title }}</span></span>
-    <span class="chip" id="run-status-meta">Module: {{ 'All Systems' if run_state.module == 'all' else run_state.module|title }}{% if run_state.started_at %} · Started: {{ run_state.started_at|truncate(16, True, '') }}{% endif %}</span>
-    <span class="chip" id="run-status-message">{{ run_state.message }}</span>
-  </div>
+  <div id="run-status-meta" class="meta" style="display:none;">Module: {{ 'All Systems' if run_state.module == 'all' else run_state.module|title }}{% if run_state.started_at %} · Started: {{ run_state.started_at|truncate(16, True, '') }}{% endif %}</div>
+  <div id="run-status-message" class="meta" style="display:none;">{{ run_state.message }}</div>
 </section>
 
 <section class="metrics-grid">
@@ -154,6 +158,21 @@
     </article>
   </div>
 </section>
+
+<div id="run-status-modal" class="modal" hidden>
+  <div class="modal-backdrop" data-close-modal></div>
+  <div class="modal-dialog" style="width:min(520px,92vw);">
+    <div class="section-head inline-actions">
+      <h2>System Status</h2>
+      <button type="button" class="btn btn-ghost" data-close-modal>Close</button>
+    </div>
+    <div class="panel" style="margin-top:8px;">
+      <p><strong>Status:</strong> <span id="run-status-value-modal">{{ run_state.status|title }}</span></p>
+      <p id="run-status-meta-modal" class="meta">Module: {{ 'All Systems' if run_state.module == 'all' else run_state.module|title }}{% if run_state.started_at %} · Started: {{ run_state.started_at|truncate(16, True, '') }}{% endif %}</p>
+      <p id="run-status-message-modal" class="meta">{{ run_state.message }}</p>
+    </div>
+  </div>
+</div>
 
 <div id="all-offers-modal" class="modal" hidden>
   <div class="modal-backdrop" data-close-modal></div>
