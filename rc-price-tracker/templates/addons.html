@@ -34,8 +34,26 @@
     </div>
 </section>
 
-<section class="section-block" id="addons-results" style="display: none;">
-    <div class="addons-summary-strip" id="addons-summary"></div>
+<section class="section-block" id="addons-results">
+    <div class="addon-top-grid">
+        <div class="addons-summary-strip" id="addons-summary"></div>
+        <article class="drink-tool-card">
+            <div class="card-head">
+                <h3>Drink Package Advisor</h3>
+                <span class="badge positive">Recommended</span>
+            </div>
+            <p class="card-body-text">Based on your track record we recommend upgrading to the Premium package for ${"%.0f"|format(249)} over 7 days.</p>
+            <ul class="drink-list">
+                <li><strong>Included drinks:</strong> Cocktails, wine, mocktails, +1 premium sparkling</li>
+                <li><strong>Breakeven:</strong> 4 drinks/day per guest</li>
+                <li><strong>Next deadline:</strong> 2026-04-02 · 14 days</li>
+            </ul>
+            <div class="card-actions">
+                <button class="btn btn-primary">Reserve package</button>
+                <button class="btn btn-ghost">Run ROI</button>
+            </div>
+        </article>
+    </div>
 
     <div class="addons-tabs">
         <button class="tab-btn active" data-tab="purchased">My Purchases</button>

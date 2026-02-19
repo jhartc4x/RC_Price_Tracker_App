@@ -23,6 +23,20 @@ from modules import database as db
 from modules.notify import Notifier
 from tracker import _build_notification_urls, load_config, run_all_checks
 
+DRINK_TYPES = [
+    {"key": "beer_wine", "label": "Beer & Wine", "avg_price": 10, "icon": "🍺"},
+    {"key": "mixed_cocktails", "label": "Mixed & Cocktails", "avg_price": 14, "icon": "🍹"},
+    {"key": "non_alc", "label": "Coffee & Soda", "avg_price": 4, "icon": "☕"},
+    {"key": "energy", "label": "Energy & Specialty", "avg_price": 6, "icon": "⚡"},
+    {"key": "premium_spirit", "label": "Premium Spirits", "avg_price": 18, "icon": "🥃"},
+]
+PACKAGES = [
+    {"name": "Classic", "description": "House beer, wine, and select spirits with moderate pour limits", "threshold": 4},
+    {"name": "Deluxe", "description": "Adds premium cocktails, frozen drinks, and expanded mocktails", "threshold": 6},
+    {"name": "Premium", "description": "Unlimited top-shelf cocktails, sparkling wine, and specialty pours", "threshold": 8},
+    {"name": "Ultimate", "description": "Craft cocktails, champagne, and upscale energy shots for frequent sippers", "threshold": 10},
+]
+
 
 def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
@@ -478,6 +492,7 @@ def create_app(
 ) -> Flask:
     app = Flask(__name__)
     app.secret_key = os.environ.get("RC_WEBAPP_SECRET", "rc-price-tracker-local-secret")
+    _register_drink_tool_routes(app)
 
     config_file = Path(config_path).resolve()
     db_path = _db_path_for_config(config_file)
@@ -1362,6 +1377,51 @@ def create_app(
         }
 
     return app
+
+
+def _register_drink_tool_routes(app: Flask) -> None:
+    @app.route("/drink-tool", methods=["GET", "POST"])
+    def drink_tool_page():
+        counts = {entry["key"]: 0 for entry in DRINK_TYPES}
+        if request.method == "POST":
+            for entry in DRINK_TYPES:
+                raw = request.form.get(entry["key"], "0")
+                try:
+                    counts[entry["key"]] = max(0, int(raw))
+                except ValueError:
+                    counts[entry["key"]] = 0
+        total_cost = sum(
+            counts[entry["key"]] * entry["avg_price"] for entry in DRINK_TYPES
+        )
+        total_drinks = sum(counts.values())
+        travel_days = 7
+        cost_per_day = total_cost / travel_days if travel_days else 0
+        recommended_package = next(
+            (pkg for pkg in PACKAGES if cost_per_day <= pkg["threshold"]),
+            PACKAGES[-1],
+        )
+        recommendation = recommended_package["name"]
+        drink_rows = [
+            {
+                "key": entry["key"],
+                "label": entry["label"],
+                "count": counts[entry["key"]],
+                "avg_price": entry["avg_price"],
+                "cost": counts[entry["key"]] * entry["avg_price"],
+                "icon": entry["icon"],
+            }
+            for entry in DRINK_TYPES
+        ]
+        return render_template(
+            "drink-tool.html",
+            drink_rows=drink_rows,
+            total_cost=total_cost,
+            total_drinks=total_drinks,
+            cost_per_day=cost_per_day,
+            recommendation=recommendation,
+            packages=PACKAGES,
+            recommended_package=recommended_package,
+        )
 
 
 def run_webapp(

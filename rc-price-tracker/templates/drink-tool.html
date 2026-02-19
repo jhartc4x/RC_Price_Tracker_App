@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Drink Tool | RC Price Companion{% endblock %}
+{% block content %}
+<section class="page-head">
+  <p class="eyebrow">Drink Package Insights</p>
+  <h1>Estimate hydration spend per sailing</h1>
+  <p>Plug in your drink counts by type, compare packages, and see the cost-per-day so you can decide which bundle makes sense.</p>
+</section>
+
+<section class="section-block">
+  <div class="card-head">
+    <h2>Drink Intake Planner</h2>
+    <span class="badge {% if recommendation == 'Premium' %}positive{% endif %}">Plan: {{ recommendation }}</span>
+  </div>
+  <form method="post" class="drink-tool-form">
+    <div class="drink-grid">
+      {% for row in drink_rows %}
+      <label>
+        <span>{{ row.icon }} {{ row.label }} · ${{ row.avg_price }} avg</span>
+        <input type="number" name="{{ row.key }}" min="0" value="{{ row.count }}" placeholder="0">
+      </label>
+      {% endfor %}
+    </div>
+    <div class="card-actions">
+      <button type="submit" class="btn btn-primary">Recalculate total</button>
+    </div>
+  </form>
+  <div class="drink-summary">
+    <div>
+      <p>Total drinks planned</p>
+      <strong>{{ total_drinks }}</strong>
+    </div>
+    <div>
+      <p>Estimated spend</p>
+      <strong>${{ "%0.2f"|format(total_cost) }}</strong>
+    </div>
+    <div>
+      <p>Cost per day</p>
+      <strong>${{ "%0.2f"|format(cost_per_day) }}</strong>
+    </div>
+  </div>
+  <section class="package-forecaster">
+    <h3>Package alignment</h3>
+    <p>Recommended plan: <strong>{{ recommended_package.name }}</strong> · {{ recommended_package.description }}</p>
+    <div class="package-grid">
+      {% for package in packages %}
+      <article class="package-card {% if package.name == recommendation %}active{% endif %}">
+        <p class="package-name">{{ package.name }}</p>
+        <p class="package-desc">{{ package.description }}</p>
+        <p class="package-threshold">Breakeven: {{ package.threshold }} drinks/day average</p>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+  <div class="drink-breakdown">
+    {% for row in drink_rows %}
+    <article>
+      <p>{{ row.label }}</p>
+      <strong>{{ row.count }} × ${{ row.avg_price }} = ${{ row.cost }}</strong>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
