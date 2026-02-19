@@ -1,19 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Settings | Royal Caribbean Price Companion{% endblock %}
 {% block content %}
-<section class="hero-banner settings-hero">
-  <div>
-    <p class="eyebrow">Configuration Studio</p>
-    <h1>Control your accounts, watchlist, alerts, and automation.</h1>
-    <p>Structured for fast edits, low mistakes, and clear operational ownership.</p>
+<section class="page-head">
+  <p class="eyebrow">Configuration Studio</p>
+  <h1>Settings</h1>
+  <p>Control accounts, watchlist, alerts, and automation in one place.</p>
+  <div class="status-pill-wrap" style="margin-top:8px;">
+    <span class="status-pill">Scheduler: {{ 'Enabled' if scheduler_enabled else 'Disabled' }}</span>
+    <button type="button" id="open-run-log" class="btn btn-secondary">View Run Log</button>
   </div>
-  <aside class="run-status">
-    <h3>Configuration</h3>
-    <p class="status-value">config.yaml</p>
-    <p class="meta">{{ config_path }}</p>
-    <p class="meta">Scheduler: {{ 'Enabled' if scheduler_enabled else 'Disabled' }}</p>
-    <button type="button" id="open-run-log" class="btn btn-secondary" style="margin-top:10px;">View Run Log</button>
-  </aside>
 </section>
 
 <form action="{{ url_for('save_settings') }}" method="post" class="settings-form">
